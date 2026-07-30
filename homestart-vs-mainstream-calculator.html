@@ -61,7 +61,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     .wrap{padding:16px;}
     .calc-title-bar{padding:20px 20px 0 !important;}
     .calc-inputs{padding:16px 20px 28px !important;}
-    .ledger{padding:16px !important;}
+    .ledger{padding:16px !important;margin:0 20px 20px !important;}
+    .calc-actions{padding:0 20px 20px !important;}
+    .disclaimer{padding:0 20px 20px !important;}
   }
   html,body{background:transparent;}
 
@@ -104,8 +106,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   .calc-title-bar{padding:24px 32px 0;}
   .calc-title-bar h2{font-size:26px;}
   .calc-title-bar .accent{color:var(--orange);}
-  .calc-grid{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;}
-  @media (max-width:760px){.calc-grid{grid-template-columns:1fr;}}
+  .calc-grid{display:grid;grid-template-columns:1fr;align-items:stretch;}
   .calc-inputs{padding:18px 24px 24px;}
   .field{margin-bottom:20px;}
   .field label{
@@ -134,7 +135,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   }
 
   /* ---------- ledger ---------- */
-  .ledger{padding:18px;background:var(--blue-tint);display:flex;flex-direction:column;justify-content:space-between;height:100%;align-self:stretch;border-radius:15px;}
+  .ledger{padding:18px;margin:0 24px 24px;background:var(--blue-tint);display:flex;flex-direction:column;justify-content:space-between;align-self:stretch;border-radius:15px;}
   .ledger-title{margin-bottom:16px;color:var(--navy);}
   .ledger-grid{
     display:grid;
@@ -178,6 +179,34 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     .savings-row{flex-direction:column;align-items:flex-start;gap:4px;}
   }
   .lvr-note{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text);margin-top:12px;}
+
+  .more-info{margin-top:16px;}
+  .more-info summary{
+    font-family:var(--font-body);font-weight:600;font-size:12px;color:var(--navy);
+    cursor:pointer;list-style:none;
+  }
+  .more-info summary::-webkit-details-marker{display:none;}
+  .more-info summary::before{content:'+ ';color:var(--orange);font-weight:700;}
+  .more-info[open] summary::before{content:'– ';}
+  .more-info-body{margin-top:8px;}
+  .more-info-body p{font-family:var(--font-body);font-size:12px;line-height:1.5;color:var(--text);margin:0 0 10px;}
+  .more-info-body p:last-child{margin-bottom:0;}
+
+  .disclaimer{padding:0 24px 24px;}
+  .disclaimer p{font-family:var(--font-body);font-size:11px;line-height:1.4;color:var(--text-soft);margin:0;}
+
+  /* ---------- print button (style guide section 11) ---------- */
+  .calc-actions{padding:0 24px 24px;}
+  .btn-print{
+    display:block;width:100%;
+    background:var(--orange);color:#fff;
+    font-family:var(--font-body);font-weight:700;font-size:14px;
+    text-transform:none;
+    border:none;border-radius:15px;
+    padding:12px 20px;
+    cursor:pointer;
+  }
+  .btn-print:hover{opacity:0.92;}
 </style>
 </head>
 <body>
@@ -211,9 +240,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
           <div class="field-row">
             <label for="hsRate" class="fr-label">Your HomeStart rate (%)</label>
-            <label for="loanTerm" class="fr-label">Remaining term (years)</label>
+            <label for="mlRate" class="fr-label">Mainstream lender rate (%)</label>
             <input type="number" id="hsRate" class="fr-input" value="8.64" min="0" step="0.01" oninput="trackEngagement();calculate()">
-            <input type="number" id="loanTerm" class="fr-input" value="30" min="1" max="30" step="1" oninput="trackEngagement();calculate()">
+            <input type="number" id="mlRate" class="fr-input" value="5.99" min="0" step="0.01" oninput="trackEngagement();mlRateEdited=true;calculate()">
           </div>
           <div class="hint" id="rateHint" style="margin-top:-8px;"></div>
         </div>
@@ -253,8 +282,23 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
               <span class="savings-value" id="out12moDiff">–</span>
             </div>
           </div>
+
+          <details class="more-info">
+            <summary>More information</summary>
+            <div class="more-info-body">
+              <p><strong>How HomeStart repayments are calculated:</strong> Your repayment is fixed at your original loan amount divided by a set factor (160 for a Low Deposit Loan, 170 for a Graduate or Shared Equity loan). Interest is charged each month on your current balance at your HomeStart rate. Because the repayment amount doesn't automatically adjust to cover the interest owed, your loan balance can increase over time rather than steadily reducing.</p>
+              <p><strong>How the mainstream lender repayment is calculated:</strong> This uses a standard principal-and-interest amortisation schedule at the mainstream rate shown, over the loan term. Each repayment covers that month's interest plus a portion of the loan balance, so the balance steadily reduces to zero by the end of the term.</p>
+            </div>
+          </details>
+
           <div class="lvr-note" id="lvrNote"></div>
         </div>
+      </div>
+      <div class="calc-actions">
+        <button class="btn-print" onclick="trackCompleteRegistration();window.print()">Print / save as PDF</button>
+      </div>
+      <div class="disclaimer">
+        <p>Rates shown are indicative and accurate as at the date this calculator was last updated. Interest rates are subject to change without notice. This calculator provides a general, indicative comparison only — it does not constitute personal credit advice and does not take into account your objectives, financial situation or needs. A full lender assessment is required before any refinancing recommendation can be made, and actual savings may differ from the figures shown based on your individual circumstances, the lender's assessment, fees, and final approved rate. All loan applications are subject to lender credit criteria, fees and charges.</p>
       </div>
     </div>
   </div>
@@ -306,6 +350,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     calculate();
   }
 
+  const LOAN_TERM_YEARS = 30;
+  let mlRateEdited = false;
+
   function mainstreamRate(lvr){
     if (lvr <= 0.80) return 5.99;
     if (lvr <= 0.90) return 6.19;
@@ -322,12 +369,17 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const loanAmount = parseFloat(document.getElementById('loanAmount').value.replace(/,/g, '')) || 0;
     const propertyValue = parseFloat(document.getElementById('propertyValue').value.replace(/,/g, '')) || 0;
     const hsRatePct = parseFloat(document.getElementById('hsRate').value) || 0;
-    const termYears = parseFloat(document.getElementById('loanTerm').value) || 30;
+    const termYears = LOAN_TERM_YEARS;
 
     if (loanAmount <= 0 || propertyValue <= 0) return;
 
     const lvr = loanAmount / propertyValue;
-    const mlRatePct = mainstreamRate(lvr);
+
+    // Auto-suggest the mainstream rate from LVR until the user edits it themselves
+    if (!mlRateEdited){
+      document.getElementById('mlRate').value = mainstreamRate(lvr);
+    }
+    const mlRatePct = parseFloat(document.getElementById('mlRate').value) || 0;
 
     const divisor = REPAY_DIVISOR[loanType];
     const hsMonthlyRepay = loanAmount / divisor;
@@ -369,7 +421,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     document.getElementById('out12moDiff').textContent = (twelveMoDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(twelveMoDiff));
 
     document.getElementById('lvrNote').textContent =
-      `Your LVR is ${(lvr*100).toFixed(1)}% → mainstream comparison rate used: ${fmtRate(mlRatePct)}.`;
+      `Your LVR is ${(lvr*100).toFixed(1)}%. The mainstream rate defaults to our standard LVR-tiered pricing, but you can overwrite it above if your quote differs.`;
   }
 
   onLoanTypeChange();
