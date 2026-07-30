@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HomeStart vs Mainstream Lender — Loan Theory</title>
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1483602183397547');
+fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
+</script>
 <style>
   @font-face{
     font-family:'Futura Condensed Extra Bold';
@@ -22,8 +34,7 @@
   :root{
     --navy:#14305F;
     --orange:#FF8C03;
-    --blue-tint:rgba(222,235,246,0.35);
-    --blue-tint-solid:#DEEBF6;
+    --blue-tint:#F3F8FC;
     --paper:#F7F7F4;
     --paper-raised:#FFFFFF;
     --rule:#E3E3DE;
@@ -50,7 +61,7 @@
     .wrap{padding:16px;}
     .calc-title-bar{padding:20px 20px 0 !important;}
     .calc-inputs{padding:16px 20px 28px !important;}
-    .ledger{padding:16px 20px 28px !important;}
+    .ledger{padding:16px !important;}
   }
   html,body{background:transparent;}
 
@@ -89,27 +100,27 @@
 
   /* ---------- calculator card ---------- */
   section{padding:0;}
-  .calc{background:var(--paper-raised);border:1px solid var(--rule);border-radius:16px;overflow:hidden;}
+  .calc{background:var(--paper-raised);border:1px solid var(--rule);border-radius:15px;overflow:hidden;}
   .calc-title-bar{padding:24px 32px 0;}
   .calc-title-bar h2{font-size:26px;}
   .calc-title-bar .accent{color:var(--orange);}
   .calc-grid{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;}
   @media (max-width:760px){.calc-grid{grid-template-columns:1fr;}}
-  .calc-inputs{padding:18px 32px 32px;}
+  .calc-inputs{padding:18px 24px 24px;}
   .field{margin-bottom:20px;}
   .field label{
     display:block;font-family:var(--font-body);font-size:12px;letter-spacing:0;text-transform:none;
-    color:var(--navy);margin-bottom:7px;font-weight:800;
+    color:var(--navy);margin-bottom:4px;font-weight:600;
   }
   .hint{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text-soft);margin-top:6px;}
   /* field styling matched to the rounded white fields used in your live site's forms */
   input[type=number],input[type=text],select,.fr-input{
-    width:100%;padding:10px 14px;
-    border:1px solid rgba(20,48,95,0.18);background:#fff;
-    font-family:var(--font-body);font-size:15px;font-weight:600;color:var(--navy);
+    width:100%;padding:9px 12px;
+    border:1px solid #D5DCE6;background:#fff;
+    font-family:var(--font-body);font-size:14px;font-weight:400;color:var(--text);
     border-radius:15px;
   }
-  input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 2px rgba(255,140,3,0.25);}
+  input:focus,select:focus{outline:none;border-color:var(--orange);}
   .field-row{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -119,11 +130,11 @@
   }
   .fr-label{
     font-family:var(--font-body);font-size:12px;letter-spacing:0;text-transform:none;
-    color:var(--navy);font-weight:800;align-self:end;
+    color:var(--navy);font-weight:600;align-self:end;
   }
 
   /* ---------- ledger ---------- */
-  .ledger{padding:18px 32px 32px;background:var(--blue-tint);display:flex;flex-direction:column;justify-content:space-between;height:100%;align-self:stretch;border-radius:16px;}
+  .ledger{padding:18px;background:var(--blue-tint);display:flex;flex-direction:column;justify-content:space-between;height:100%;align-self:stretch;border-radius:15px;}
   .ledger-title{margin-bottom:16px;color:var(--navy);}
   .ledger-grid{
     display:grid;
@@ -134,14 +145,14 @@
   }
   .lg-head{
     font-family:var(--font-heading);font-weight:700;color:var(--navy);
-    font-size:20px;line-height:1.4;
+    font-size:16px;line-height:1.4;text-transform:uppercase;letter-spacing:-0.01em;
   }
   .lg-head.hs{grid-column:1 / span 2;}
   .lg-head.ml{grid-column:4 / span 2;}
-  .lg-label{font-family:var(--font-body);font-size:13px;line-height:1.4;color:var(--text);align-self:start;}
+  .lg-label{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--navy);align-self:start;}
   .lg-label.hs{grid-column:1;}
   .lg-label.ml{grid-column:4;}
-  .lg-value{font-family:var(--font-body);font-size:13px;line-height:1.4;color:var(--navy);font-weight:800;text-align:right;align-self:start;}
+  .lg-value{font-family:var(--font-body);font-size:17px;line-height:1.4;color:var(--navy);font-weight:700;text-align:right;align-self:start;}
   .lg-value.hs{grid-column:2;}
   .lg-value.ml{grid-column:5;}
 
@@ -159,10 +170,10 @@
     .lg-value.hs,.lg-value.ml{grid-column:2;}
   }
 
-  .savings-block{margin-top:16px;background:var(--navy);border-radius:8px;padding:20px 22px;}
+  .savings-block{margin-top:16px;background:var(--navy);border-radius:12px;padding:13px 14px;}
   .savings-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;}
-  .savings-label{font-family:var(--font-body);font-size:13px;color:#C7D2E3;}
-  .savings-value{font-family:var(--font-heading);font-size:24px;font-weight:700;color:var(--orange);white-space:nowrap;flex-shrink:0;letter-spacing:0;}
+  .savings-label{font-family:var(--font-body);font-size:11px;color:#C7D4E8;}
+  .savings-value{font-family:var(--font-heading);font-size:19px;font-weight:800;color:var(--orange);white-space:nowrap;flex-shrink:0;letter-spacing:-0.01em;}
   @media (max-width:600px){
     .savings-row{flex-direction:column;align-items:flex-start;gap:4px;}
   }
@@ -181,7 +192,7 @@
         <div class="calc-inputs">
           <div class="field">
             <label for="loanType">HomeStart loan type</label>
-            <select id="loanType" onchange="onLoanTypeChange()">
+            <select id="loanType" onchange="trackEngagement();onLoanTypeChange()">
               <option value="graduate">Graduate Home Loan</option>
               <option value="sharedEquity">Shared Equity Home Loan</option>
               <option value="lowDeposit">Low Deposit Home Loan</option>
@@ -190,19 +201,19 @@
 
           <div class="field">
             <label for="loanAmount">Current loan balance ($)</label>
-            <input type="text" inputmode="numeric" id="loanAmount" value="600,000" oninput="formatMoneyInput(this);calculate()">
+            <input type="text" inputmode="numeric" id="loanAmount" value="600,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
           </div>
 
           <div class="field">
             <label for="propertyValue">Current property value ($)</label>
-            <input type="text" inputmode="numeric" id="propertyValue" value="750,000" oninput="formatMoneyInput(this);calculate()">
+            <input type="text" inputmode="numeric" id="propertyValue" value="750,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
           </div>
 
           <div class="field-row">
             <label for="hsRate" class="fr-label">Your HomeStart rate (%)</label>
             <label for="loanTerm" class="fr-label">Remaining term (years)</label>
-            <input type="number" id="hsRate" class="fr-input" value="8.64" min="0" step="0.01" oninput="calculate()">
-            <input type="number" id="loanTerm" class="fr-input" value="30" min="1" max="30" step="1" oninput="calculate()">
+            <input type="number" id="hsRate" class="fr-input" value="8.64" min="0" step="0.01" oninput="trackEngagement();calculate()">
+            <input type="number" id="loanTerm" class="fr-input" value="30" min="1" max="30" step="1" oninput="trackEngagement();calculate()">
           </div>
           <div class="hint" id="rateHint" style="margin-top:-8px;"></div>
         </div>
@@ -250,6 +261,24 @@
 </section>
 
 <script>
+  var CALC_NAME = 'HomeStart Comparison Calculator';
+  var hasEngaged = false;
+  function trackEngagement(){
+    if(hasEngaged) return;
+    hasEngaged = true;
+    if(typeof fbq === 'function'){
+      fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
+    }
+  }
+  // No Print/Save as PDF action exists on this widget, so CompleteRegistration
+  // isn't wired up yet. If a CTA (e.g. "Speak to a broker") is added later,
+  // call this on its click handler:
+  window.trackCompleteRegistration = function(){
+    if(typeof fbq === 'function'){
+      fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
+    }
+  };
+
   const RATE_DEFAULTS = { graduate: 8.64, sharedEquity: 8.64, lowDeposit: 8.64 };
   const REPAY_DIVISOR = { graduate: 170, sharedEquity: 170, lowDeposit: 160 };
   const RATE_HINTS = {
