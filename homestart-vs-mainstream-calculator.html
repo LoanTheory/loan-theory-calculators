@@ -64,6 +64,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     .ledger{padding:16px !important;margin:0 20px 20px !important;}
     .calc-actions{padding:0 20px 20px !important;}
     .disclaimer{padding:0 20px 20px !important;}
+    .chart-section{padding:0 20px 8px !important;}
   }
   html,body{background:transparent;}
 
@@ -195,6 +196,37 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   .disclaimer{padding:0 24px 24px;}
   .disclaimer p{font-family:var(--font-body);font-size:11px;line-height:1.4;color:var(--text-soft);margin:0;}
 
+  /* ---------- charts ---------- */
+  .chart-section{padding:0 24px 8px;display:grid;grid-template-columns:1fr;gap:20px;}
+  .chart-panel{background:var(--blue-tint);border-radius:15px;padding:18px;}
+  .chart-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .chart-range-select{
+    width:auto;flex:0 0 auto;align-self:flex-start;
+    padding:3px 22px 3px 10px;border:none;background:rgba(20,48,95,0.08);border-radius:20px;
+    font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--navy);
+    appearance:none;-webkit-appearance:none;-moz-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2314305F' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 8px center;background-size:9px 6px;
+    cursor:pointer;
+  }
+  .chart-range-select:focus{outline:none;background-color:rgba(255,140,3,0.12);}
+  .chart-callout{
+    background:rgba(255,140,3,0.1);border-left:3px solid var(--orange);
+    padding:8px 12px;margin:10px 0 14px;border-radius:4px;
+    font-family:var(--font-body);font-size:11.5px;line-height:1.4;color:var(--navy);
+  }
+  .chart-title{font-family:var(--font-heading);font-weight:700;color:var(--navy);font-size:16px;text-transform:uppercase;letter-spacing:-0.01em;margin:0 0 4px;}
+  .chart-sub{font-family:var(--font-body);font-size:12px;color:var(--text);margin:0 0 12px;}
+  .chart-panel svg{width:100%;height:auto;display:block;}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:10px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:11px;color:var(--text);}
+  .legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .legend-swatch.hs{background:var(--orange);}
+  .legend-swatch.ml{background:var(--navy);}
+  .legend-swatch.interest{background:#7C93B5;}
+  .legend-swatch.principal{background:var(--orange);}
+  .legend-swatch.shortfall{background:repeating-linear-gradient(45deg,#B9C2D6,#B9C2D6 3px,#E4E9F1 3px,#E4E9F1 6px);}
+
   /* ---------- print button (style guide section 11) ---------- */
   .calc-actions{padding:0 24px 24px;}
   .btn-print{
@@ -229,8 +261,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
           </div>
 
           <div class="field">
-            <label for="loanAmount">Current loan balance ($)</label>
+            <label for="loanAmount">Home loan balance at settlement ($)</label>
             <input type="text" inputmode="numeric" id="loanAmount" value="600,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
+            <div class="hint">HomeStart calculates your repayment from your loan amount at settlement, not your current balance — use the figure from your original loan documents.</div>
           </div>
 
           <div class="field">
@@ -294,6 +327,55 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
           <div class="lvr-note" id="lvrNote"></div>
         </div>
       </div>
+
+      <div class="chart-section">
+        <div class="chart-panel">
+          <div class="chart-panel-head">
+            <div>
+              <h3 class="chart-title">Loan balance over time</h3>
+              <p class="chart-sub">How much you'd still owe, if nothing else changes</p>
+            </div>
+            <select id="balanceChartRange" class="chart-range-select" onchange="onBalanceRangeChange()">
+              <option value="5">5 years</option>
+              <option value="10">10 years</option>
+              <option value="15">15 years</option>
+              <option value="20">20 years</option>
+              <option value="25">25 years</option>
+              <option value="30">30 years</option>
+            </select>
+          </div>
+          <svg id="balanceChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch hs"></span>HomeStart balance</span>
+            <span class="legend-item"><span class="legend-swatch ml"></span>Mainstream lender balance</span>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-panel-head">
+            <div>
+              <h3 class="chart-title" id="repaymentChartTitle">Where your month 1 repayment goes</h3>
+              <p class="chart-sub">Interest cost vs. principal paid down</p>
+            </div>
+            <select id="repaymentMonthSelect" class="chart-range-select" onchange="onRepaymentMonthChange()">
+              <option value="1">Month 1</option>
+              <option value="12">Month 12</option>
+              <option value="24">Month 24</option>
+              <option value="36">Month 36</option>
+              <option value="48">Month 48</option>
+              <option value="60">Month 60</option>
+            </select>
+          </div>
+          <div class="chart-callout">This is a single month's snapshot — the split between interest and principal changes every month as the loan balances shift. Use the dropdown to see how it looks further down the track.</div>
+          <svg id="repaymentChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch interest"></span>Interest (cost)</span>
+            <span class="legend-item"><span class="legend-swatch principal"></span>Principal paid down</span>
+            <span class="legend-item"><span class="legend-swatch shortfall"></span>Added to loan balance (unpaid interest)</span>
+          </div>
+        </div>
+      </div>
+
       <div class="calc-actions">
         <button class="btn-print" onclick="trackCompleteRegistration();window.print()">Print / save as PDF</button>
       </div>
@@ -422,6 +504,188 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
     document.getElementById('lvrNote').textContent =
       `Your LVR is ${(lvr*100).toFixed(1)}%. The mainstream rate defaults to our standard LVR-tiered pricing, but you can overwrite it above if your quote differs.`;
+
+    renderBalanceChart(loanAmount, hsRatePct, mlRatePct, divisor, termYears, getSelectedChartRange());
+    renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, getSelectedRepaymentMonth());
+
+    lastChartInputs = {loanAmount, hsRatePct, mlRatePct, divisor, termYears};
+  }
+
+  let lastChartInputs = null;
+  function getSelectedChartRange(){
+    const el = document.getElementById('balanceChartRange');
+    return el ? (parseInt(el.value, 10) || 5) : 5;
+  }
+  function onBalanceRangeChange(){
+    if (!lastChartInputs) return;
+    const { loanAmount, hsRatePct, mlRatePct, divisor, termYears } = lastChartInputs;
+    renderBalanceChart(loanAmount, hsRatePct, mlRatePct, divisor, termYears, getSelectedChartRange());
+  }
+  function getSelectedRepaymentMonth(){
+    const el = document.getElementById('repaymentMonthSelect');
+    return el ? (parseInt(el.value, 10) || 1) : 1;
+  }
+  function onRepaymentMonthChange(){
+    if (!lastChartInputs) return;
+    const { loanAmount, hsRatePct, mlRatePct, divisor } = lastChartInputs;
+    renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, getSelectedRepaymentMonth());
+  }
+
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs){
+    const el = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function renderBalanceChart(loanAmount, hsRatePct, mlRatePct, divisor, fullTermYears, displayYears){
+    const svg = document.getElementById('balanceChart');
+    svg.innerHTML = '';
+
+    const hsMonthlyRate = (hsRatePct / 100) / 12;
+    const mlMonthlyRate = (mlRatePct / 100) / 12;
+    const fullMonths = fullTermYears * 12;
+    const hsMonthlyRepay = loanAmount / divisor;
+    const mlMonthlyRepay = pmt(mlMonthlyRate, fullMonths, loanAmount);
+
+    // Always simulate the full term (so the mainstream amortisation math stays correct),
+    // then slice down to whatever range the person has chosen to look at.
+    let hsBal = loanAmount, mlBal = loanAmount;
+    const hsSeriesFull = [loanAmount], mlSeriesFull = [loanAmount];
+    for (let m = 1; m <= fullMonths; m++){
+      hsBal = hsBal + (hsBal * hsMonthlyRate) - hsMonthlyRepay;
+      const mlInt = mlBal * mlMonthlyRate;
+      const mlPrincipal = Math.min(mlBal, Math.max(0, mlMonthlyRepay - mlInt));
+      mlBal = Math.max(0, mlBal - mlPrincipal);
+      if (m % 12 === 0){ hsSeriesFull.push(hsBal); mlSeriesFull.push(mlBal); }
+    }
+
+    const rangeYears = Math.min(displayYears || 5, fullTermYears);
+    const hsSeries = hsSeriesFull.slice(0, rangeYears + 1);
+    const mlSeries = mlSeriesFull.slice(0, rangeYears + 1);
+
+    const padL = 56, padR = 12, padT = 12, padB = 28;
+    const w = 600, h = 280;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const maxVal = Math.max(...hsSeries, ...mlSeries, loanAmount) * 1.05;
+    const n = hsSeries.length;
+
+    const x = i => padL + (i / (n - 1)) * plotW;
+    const y = v => padT + plotH - (v / maxVal) * plotH;
+
+    // gridlines + y labels
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++){
+      const val = (maxVal / gridSteps) * i;
+      const gy = y(val);
+      svg.appendChild(svgEl('line', {x1:padL, y1:gy, x2:w-padR, y2:gy, stroke:'#D7E3F0', 'stroke-width':1}));
+      const label = svgEl('text', {x:padL-8, y:gy+4, 'text-anchor':'end', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+      label.textContent = '$' + Math.round(val / 1000) + 'k';
+      svg.appendChild(label);
+    }
+
+    // x labels
+    const xStep = rangeYears <= 10 ? 1 : (rangeYears <= 20 ? 2 : 5);
+    for (let yr = 0; yr <= rangeYears; yr += xStep){
+      const gx = x(yr);
+      const label = svgEl('text', {x:gx, y:h-8, 'text-anchor':'middle', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+      label.textContent = 'Yr ' + yr;
+      svg.appendChild(label);
+    }
+
+    function pathFor(series){
+      return series.map((v, i) => (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+    }
+
+    svg.appendChild(svgEl('path', {d:pathFor(mlSeries), fill:'none', stroke:'#14305F', 'stroke-width':3, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
+    svg.appendChild(svgEl('path', {d:pathFor(hsSeries), fill:'none', stroke:'#FF8C03', 'stroke-width':3, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
+  }
+
+  function renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, targetMonth){
+    const svg = document.getElementById('repaymentChart');
+    svg.innerHTML = '';
+
+    const titleEl = document.getElementById('repaymentChartTitle');
+    if (titleEl) titleEl.textContent = `Where your month ${targetMonth} repayment goes`;
+
+    const hsMonthlyRate = (hsRatePct / 100) / 12;
+    const mlMonthlyRate = (mlRatePct / 100) / 12;
+    const fullMonths = LOAN_TERM_YEARS * 12;
+    const hsRepay = loanAmount / divisor;
+    const mlRepay = pmt(mlMonthlyRate, fullMonths, loanAmount);
+
+    // Simulate up to the target month to find the balance-dependent interest at that point
+    let hsBal = loanAmount, mlBal = loanAmount;
+    let hsInterest = 0, mlInterest = 0;
+    const m = Math.min(targetMonth, fullMonths);
+    for (let i = 1; i <= m; i++){
+      hsInterest = hsBal * hsMonthlyRate;
+      hsBal = hsBal + hsInterest - hsRepay;
+      mlInterest = mlBal * mlMonthlyRate;
+      const mlPrincipal = Math.min(mlBal, Math.max(0, mlRepay - mlInterest));
+      mlBal = Math.max(0, mlBal - mlPrincipal);
+    }
+
+    const mlPrincipal = Math.max(0, mlRepay - mlInterest);
+    const hsShortfall = Math.max(0, hsInterest - hsRepay);
+    const hsPaidInterest = Math.min(hsRepay, hsInterest);
+
+    const w = 600, h = 280;
+    const padL = 56, padR = 12, padT = 20, padB = 34;
+    const plotH = h - padT - padB;
+    const maxVal = Math.max(hsInterest, mlRepay) * 1.15;
+
+    const barW = 130;
+    const hsX = 140, mlX = 380;
+
+    const scaleY = v => (v / maxVal) * plotH;
+    const topY = v => padT + plotH - scaleY(v);
+
+    // gridlines
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++){
+      const val = (maxVal / gridSteps) * i;
+      const gy = topY(val);
+      svg.appendChild(svgEl('line', {x1:padL, y1:gy, x2:w-padR, y2:gy, stroke:'#D7E3F0', 'stroke-width':1}));
+      const label = svgEl('text', {x:padL-8, y:gy+4, 'text-anchor':'end', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+      label.textContent = '$' + Math.round(val);
+      svg.appendChild(label);
+    }
+
+    function stackedBar(cx, segments, label){
+      let cumulative = 0;
+      segments.forEach(seg => {
+        if (seg.value <= 0) return;
+        const yTop = topY(cumulative + seg.value);
+        const yBottom = topY(cumulative);
+        svg.appendChild(svgEl('rect', {
+          x:cx - barW/2, y:yTop, width:barW, height:(yBottom - yTop),
+          fill:seg.fill, stroke: seg.hatch ? '#8FA0C4' : 'none', 'stroke-width': seg.hatch ? 1 : 0,
+        }));
+        cumulative += seg.value;
+      });
+      const xAxisLabel = svgEl('text', {x:cx, y:h-10, 'text-anchor':'middle', 'font-size':12, fill:'#14305F', 'font-family':'Arial, sans-serif', 'font-weight':'700'});
+      xAxisLabel.textContent = label;
+      svg.appendChild(xAxisLabel);
+    }
+
+    // diagonal hatch pattern for HomeStart's unpaid-interest shortfall
+    const defs = svgEl('defs', {});
+    const pattern = svgEl('pattern', {id:'hatch', width:6, height:6, patternTransform:'rotate(45)', patternUnits:'userSpaceOnUse'});
+    pattern.appendChild(svgEl('rect', {width:6, height:6, fill:'#E4E9F1'}));
+    pattern.appendChild(svgEl('line', {x1:0, y1:0, x2:0, y2:6, stroke:'#B9C2D6', 'stroke-width':3}));
+    defs.appendChild(pattern);
+    svg.appendChild(defs);
+
+    stackedBar(hsX, [
+      {value: hsPaidInterest, fill:'#7C93B5'},
+      {value: hsShortfall, fill:'url(#hatch)', hatch:true},
+    ], 'HomeStart');
+
+    stackedBar(mlX, [
+      {value: mlInterest, fill:'#7C93B5'},
+      {value: mlPrincipal, fill:'#FF8C03'},
+    ], 'Mainstream lender');
   }
 
   onLoanTypeChange();
