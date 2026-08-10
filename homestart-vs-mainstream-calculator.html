@@ -115,6 +115,30 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     color:var(--navy);margin-bottom:4px;font-weight:600;
   }
   .hint{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text-soft);margin-top:6px;}
+
+  /* ---------- information bubble (style guide section 10) ---------- */
+  .info-bubble{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--navy);color:#fff;
+    font-family:Arial,sans-serif;font-size:10px;font-weight:700;line-height:1;
+    margin-left:4px;position:relative;cursor:help;vertical-align:middle;
+  }
+  .info-bubble .info-tooltip{
+    position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
+    width:200px;background:var(--navy);color:#fff;
+    font-family:var(--font-body);font-weight:400;font-size:11px;line-height:1.4;text-align:left;
+    padding:8px 10px;border-radius:8px;
+    opacity:0;visibility:hidden;transition:opacity .15s ease;
+    pointer-events:none;z-index:20;
+  }
+  .info-bubble .info-tooltip::after{
+    content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--navy);
+  }
+  .info-bubble:hover .info-tooltip,.info-bubble:focus .info-tooltip{opacity:1;visibility:visible;}
+  @media print{.info-bubble{display:none;}}
+
   /* field styling matched to the rounded white fields used in your live site's forms */
   input[type=number],input[type=text],select,.fr-input{
     width:100%;padding:9px 12px;
@@ -218,6 +242,14 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   .chart-title{font-family:var(--font-heading);font-weight:700;color:var(--navy);font-size:16px;text-transform:uppercase;letter-spacing:-0.01em;margin:0 0 4px;}
   .chart-sub{font-family:var(--font-body);font-size:12px;color:var(--text);margin:0 0 12px;}
   .chart-panel svg{width:100%;height:auto;display:block;}
+  .chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .chart-swipe-hint{display:none;}
+  @media (max-width:500px){
+    .chart-scroll{margin:0 -10px;padding:0 10px;}
+    .chart-scroll svg{width:480px;max-width:none;}
+    .chart-scroll-wide svg{width:560px;}
+    .chart-swipe-hint{display:block;font-family:var(--font-body);font-size:10.5px;color:var(--text-soft);text-align:right;margin-top:4px;}
+  }
   .chart-legend{display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:10px;}
   .legend-item{display:flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:11px;color:var(--text);}
   .legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
@@ -252,7 +284,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       <div class="calc-grid">
         <div class="calc-inputs">
           <div class="field">
-            <label for="loanType">HomeStart loan type</label>
+            <label for="loanType">HomeStart loan type
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Your repayment factor depends on loan type: Low Deposit Loans use 160, Graduate and Shared Equity loans use 170.</span></span>
+            </label>
             <select id="loanType" onchange="trackEngagement();onLoanTypeChange()">
               <option value="graduate">Graduate Home Loan</option>
               <option value="sharedEquity">Shared Equity Home Loan</option>
@@ -261,8 +295,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
           </div>
 
           <div class="field">
-            <label for="loanAmount">Home loan balance at settlement ($)</label>
-            <input type="text" inputmode="numeric" id="loanAmount" value="600,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
+            <label for="loanAmount">Home loan balance at settlement ($)
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">HomeStart calculates your fixed repayment from this original settlement amount, not your current outstanding balance.</span></span>
+            </label>
+            <input type="text" inputmode="numeric" id="loanAmount" value="500,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
             <div class="hint">HomeStart calculates your repayment from your loan amount at settlement, not your current balance — use the figure from your original loan documents.</div>
           </div>
 
@@ -273,7 +309,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
           <div class="field-row">
             <label for="hsRate" class="fr-label">Your HomeStart rate (%)</label>
-            <label for="mlRate" class="fr-label">Mainstream lender rate (%)</label>
+            <label for="mlRate" class="fr-label">Mainstream lender rate (%)
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">This defaults to standard LVR-tiered pricing based on your figures above, but you can overwrite it with an actual quote.</span></span>
+            </label>
             <input type="number" id="hsRate" class="fr-input" value="8.64" min="0" step="0.01" oninput="trackEngagement();calculate()">
             <input type="number" id="mlRate" class="fr-input" value="5.99" min="0" step="0.01" oninput="trackEngagement();mlRateEdited=true;calculate()">
           </div>
@@ -344,7 +382,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
               <option value="30">30 years</option>
             </select>
           </div>
-          <svg id="balanceChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="chart-scroll chart-scroll-wide">
+            <svg id="balanceChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="chart-swipe-hint">Swipe to see more →</div>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-swatch hs"></span>HomeStart balance</span>
             <span class="legend-item"><span class="legend-swatch ml"></span>Mainstream lender balance</span>
@@ -367,7 +408,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             </select>
           </div>
           <div class="chart-callout">This is a single month's snapshot — the split between interest and principal changes every month as the loan balances shift. Use the dropdown to see how it looks further down the track.</div>
-          <svg id="repaymentChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="chart-scroll">
+            <svg id="repaymentChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="chart-swipe-hint">Swipe to see more →</div>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-swatch interest"></span>Interest (cost)</span>
             <span class="legend-item"><span class="legend-swatch principal"></span>Principal paid down</span>
@@ -564,19 +608,29 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const hsSeries = hsSeriesFull.slice(0, rangeYears + 1);
     const mlSeries = mlSeriesFull.slice(0, rangeYears + 1);
 
-    const padL = 56, padR = 12, padT = 12, padB = 28;
-    const w = 600, h = 280;
+    const padL = 60, padR = 12, padT = 26, padB = 28;
+    const w = 600, h = 300;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
     const plotW = w - padL - padR, plotH = h - padT - padB;
-    const maxVal = Math.max(...hsSeries, ...mlSeries, loanAmount) * 1.05;
+
+    // Zoom the Y-axis into the actual data range instead of always starting at $0,
+    // so the lines use the available space rather than sitting in a mostly-empty chart.
+    const allVals = [...hsSeries, ...mlSeries];
+    const dataMin = Math.min(...allVals);
+    const dataMax = Math.max(...allVals);
+    const span = Math.max(dataMax - dataMin, 1);
+    const minVal = Math.max(0, dataMin - span * 0.15);
+    const maxVal = dataMax + span * 0.15;
+
     const n = hsSeries.length;
 
     const x = i => padL + (i / (n - 1)) * plotW;
-    const y = v => padT + plotH - (v / maxVal) * plotH;
+    const y = v => padT + plotH - ((v - minVal) / (maxVal - minVal)) * plotH;
 
     // gridlines + y labels
     const gridSteps = 4;
     for (let i = 0; i <= gridSteps; i++){
-      const val = (maxVal / gridSteps) * i;
+      const val = minVal + ((maxVal - minVal) / gridSteps) * i;
       const gy = y(val);
       svg.appendChild(svgEl('line', {x1:padL, y1:gy, x2:w-padR, y2:gy, stroke:'#D7E3F0', 'stroke-width':1}));
       const label = svgEl('text', {x:padL-8, y:gy+4, 'text-anchor':'end', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
@@ -599,6 +653,26 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
     svg.appendChild(svgEl('path', {d:pathFor(mlSeries), fill:'none', stroke:'#14305F', 'stroke-width':3, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
     svg.appendChild(svgEl('path', {d:pathFor(hsSeries), fill:'none', stroke:'#FF8C03', 'stroke-width':3, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
+
+    // Value labels: always label the start and end points; if the range is short
+    // enough, label every year in between too so the year-on-year change is readable.
+    const fmtK = v => '$' + (v / 1000).toFixed(0) + 'k';
+    const labelEvery = rangeYears <= 5 ? 1 : (rangeYears <= 10 ? 2 : null);
+
+    function pointLabels(series, color, dy){
+      series.forEach((v, i) => {
+        const isEnd = i === series.length - 1;
+        const isStart = i === 0;
+        const onStep = labelEvery && i % labelEvery === 0;
+        if (!isStart && !isEnd && !onStep) return;
+        svg.appendChild(svgEl('circle', {cx:x(i), cy:y(v), r:3, fill:color}));
+        const t = svgEl('text', {x:x(i), y:y(v)+dy, 'text-anchor':'middle', 'font-size':10, 'font-weight':'700', fill:color, 'font-family':'Arial, sans-serif'});
+        t.textContent = fmtK(v);
+        svg.appendChild(t);
+      });
+    }
+    pointLabels(hsSeries, '#FF8C03', -10);
+    pointLabels(mlSeries, '#14305F', 16);
   }
 
   function renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, targetMonth){
