@@ -116,18 +116,27 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   }
   .hint{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text-soft);margin-top:6px;}
 
+  .warning-banner{
+    background:#FFF3DF;color:#8a5a00;
+    font-family:var(--font-body);font-size:12.5px;line-height:1.5;
+    border-radius:10px;padding:10px 12px;margin-bottom:20px;
+  }
+  .warning-banner strong{font-weight:700;}
+
   /* ---------- information bubble (style guide section 10) ---------- */
   .info-bubble{
     display:inline-flex;align-items:center;justify-content:center;
     width:14px;height:14px;border-radius:50%;
     background:var(--navy);color:#fff;
     font-family:Arial,sans-serif;font-size:10px;font-weight:700;line-height:1;
+    text-transform:none;letter-spacing:normal;
     margin-left:4px;position:relative;cursor:help;vertical-align:middle;
   }
   .info-bubble .info-tooltip{
     position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
     width:200px;background:var(--navy);color:#fff;
     font-family:var(--font-body);font-weight:400;font-size:11px;line-height:1.4;text-align:left;
+    text-transform:none;letter-spacing:normal;
     padding:8px 10px;border-radius:8px;
     opacity:0;visibility:hidden;transition:opacity .15s ease;
     pointer-events:none;z-index:20;
@@ -287,6 +296,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             </select>
           </div>
 
+          <div class="warning-banner" id="sharedEquityWarning" style="display:none;">
+            <strong>Heads up:</strong> this comparison only covers your current HomeStart loan. It does not include the extra lending you'd need to pay out HomeStart's shared equity portion, which would increase the amount you'd need to borrow with a mainstream lender.
+          </div>
+
           <div class="field">
             <label for="loanAmount">Home loan balance at settlement ($)
               <span class="info-bubble" tabindex="0">i<span class="info-tooltip">HomeStart calculates your fixed repayment from this original settlement amount, not your current outstanding balance.</span></span>
@@ -347,7 +360,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             </div>
           </div>
 
-          <details class="more-info">
+          <details class="more-info" ontoggle="if(this.open) trackEngagement();">
             <summary>More information</summary>
             <div class="more-info-body">
               <p><strong>How HomeStart repayments are calculated:</strong> Your repayment is fixed at your original loan amount divided by a set factor (160 for a Low Deposit Loan, 170 for a Graduate or Shared Equity loan). Interest is charged each month on your current balance at your HomeStart rate. Because the repayment amount doesn't automatically adjust to cover the interest owed, your loan balance can increase over time rather than steadily reducing.</p>
@@ -363,10 +376,12 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
         <div class="chart-panel">
           <div class="chart-panel-head">
             <div>
-              <h3 class="chart-title">Loan balance over time</h3>
+              <h3 class="chart-title">Loan balance over time
+                <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Because of how HomeStart repayments are calculated and the current interest rate, your HomeStart balance can increase over time. A mainstream lender's repayment is designed to cover the interest charged and steadily reduce your loan over the loan term.</span></span>
+              </h3>
               <p class="chart-sub">How much you'd still owe, if nothing else changes</p>
             </div>
-            <select id="balanceChartRange" class="chart-range-select" onchange="onBalanceRangeChange()">
+            <select id="balanceChartRange" class="chart-range-select" onchange="trackEngagement();onBalanceRangeChange()">
               <option value="5">5 years</option>
               <option value="10">10 years</option>
               <option value="15">15 years</option>
@@ -385,10 +400,12 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
         <div class="chart-panel">
           <div class="chart-panel-head">
             <div>
-              <h3 class="chart-title" id="repaymentChartTitle">Where your month 1 repayment goes</h3>
+              <h3 class="chart-title"><span id="repaymentChartTitle">Where your month 1 repayment goes</span>
+                <span class="info-bubble" tabindex="0">i<span class="info-tooltip">If HomeStart's repayment doesn't cover that month's interest, no principal is paid down — the shortfall is added to your loan balance instead. If the repayment is more than the interest (e.g. at a lower rate), the difference is principal paid down, just like a standard loan.</span></span>
+              </h3>
               <p class="chart-sub">Interest cost vs. principal paid down</p>
             </div>
-            <select id="repaymentMonthSelect" class="chart-range-select" onchange="onRepaymentMonthChange()">
+            <select id="repaymentMonthSelect" class="chart-range-select" onchange="trackEngagement();onRepaymentMonthChange()">
               <option value="1">Month 1</option>
               <option value="12">Month 12</option>
               <option value="24">Month 24</option>
@@ -461,6 +478,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const type = document.getElementById('loanType').value;
     document.getElementById('hsRate').value = RATE_DEFAULTS[type];
     document.getElementById('rateHint').textContent = RATE_HINTS[type];
+    document.getElementById('sharedEquityWarning').style.display = (type === 'sharedEquity') ? 'block' : 'none';
     calculate();
   }
 
@@ -721,7 +739,8 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const mlPrincipal = Math.max(0, mlRepay - mlInterest);
     const hsShortfall = Math.max(0, hsInterest - hsRepay);
     const hsPaidInterest = Math.min(hsRepay, hsInterest);
-    const maxVal = Math.max(hsInterest, mlRepay) * 1.15;
+    const hsPrincipal = Math.max(0, hsRepay - hsInterest);
+    const maxVal = Math.max(hsInterest, hsRepay, mlRepay) * 1.15;
 
     // diagonal hatch pattern for HomeStart's unpaid-interest shortfall
     const defs = svgEl('defs', {});
@@ -779,6 +798,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
       hBar(74, [
         {value: hsPaidInterest, fill:'#7C93B5'},
+        {value: hsPrincipal, fill:'#FF8C03'},
         {value: hsShortfall, fill:'url(#hatch)', hatch:true},
       ], 'HomeStart', fmtWhole(hsRepay) + ' paid');
 
@@ -834,6 +854,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
     stackedBar(hsX, [
       {value: hsPaidInterest, fill:'#7C93B5'},
+      {value: hsPrincipal, fill:'#FF8C03'},
       {value: hsShortfall, fill:'url(#hatch)', hatch:true},
     ], 'HomeStart');
 
