@@ -242,14 +242,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   .chart-title{font-family:var(--font-heading);font-weight:700;color:var(--navy);font-size:16px;text-transform:uppercase;letter-spacing:-0.01em;margin:0 0 4px;}
   .chart-sub{font-family:var(--font-body);font-size:12px;color:var(--text);margin:0 0 12px;}
   .chart-panel svg{width:100%;height:auto;display:block;}
-  .chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .chart-swipe-hint{display:none;}
-  @media (max-width:500px){
-    .chart-scroll{margin:0 -10px;padding:0 10px;}
-    .chart-scroll svg{width:480px;max-width:none;}
-    .chart-scroll-wide svg{width:560px;}
-    .chart-swipe-hint{display:block;font-family:var(--font-body);font-size:10.5px;color:var(--text-soft);text-align:right;margin-top:4px;}
-  }
+
   .chart-legend{display:flex;flex-wrap:wrap;gap:12px 16px;margin-top:10px;}
   .legend-item{display:flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:11px;color:var(--text);}
   .legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
@@ -382,10 +375,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
               <option value="30">30 years</option>
             </select>
           </div>
-          <div class="chart-scroll chart-scroll-wide">
-            <svg id="balanceChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
-          </div>
-          <div class="chart-swipe-hint">Swipe to see more →</div>
+          <svg id="balanceChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-swatch hs"></span>HomeStart balance</span>
             <span class="legend-item"><span class="legend-swatch ml"></span>Mainstream lender balance</span>
@@ -408,10 +398,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             </select>
           </div>
           <div class="chart-callout">This is a single month's snapshot — the split between interest and principal changes every month as the loan balances shift. Use the dropdown to see how it looks further down the track.</div>
-          <div class="chart-scroll">
-            <svg id="repaymentChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
-          </div>
-          <div class="chart-swipe-hint">Swipe to see more →</div>
+          <svg id="repaymentChart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-swatch interest"></span>Interest (cost)</span>
             <span class="legend-item"><span class="legend-swatch principal"></span>Principal paid down</span>
@@ -425,6 +412,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       </div>
       <div class="disclaimer">
         <p>Rates shown are indicative and accurate as at the date this calculator was last updated. Interest rates are subject to change without notice. This calculator provides a general, indicative comparison only — it does not constitute personal credit advice and does not take into account your objectives, financial situation or needs. A full lender assessment is required before any refinancing recommendation can be made, and actual savings may differ from the figures shown based on your individual circumstances, the lender's assessment, fees, and final approved rate. All loan applications are subject to lender credit criteria, fees and charges.</p>
+        <p style="margin-top:8px;">This calculator does not take into account HomeStart's Repayment Safeguard, and assumes your HomeStart repayment stays fixed rather than changing annually with indexation. Your actual HomeStart repayments and balance may differ from what's shown here.</p>
       </div>
     </div>
   </div>
@@ -576,6 +564,26 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   }
 
   const SVGNS = 'http://www.w3.org/2000/svg';
+
+  function isMobileView(){ return window.innerWidth <= 520; }
+
+  let resizeTimer = null;
+  let lastIsMobile = isMobileView();
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      const nowMobile = isMobileView();
+      if (nowMobile !== lastIsMobile){
+        lastIsMobile = nowMobile;
+        if (lastChartInputs){
+          const { loanAmount, hsRatePct, mlRatePct, divisor, termYears } = lastChartInputs;
+          renderBalanceChart(loanAmount, hsRatePct, mlRatePct, divisor, termYears, getSelectedChartRange());
+          renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, getSelectedRepaymentMonth());
+        }
+      }
+    }, 150);
+  });
+
   function svgEl(tag, attrs){
     const el = document.createElementNS(SVGNS, tag);
     for (const k in attrs) el.setAttribute(k, attrs[k]);
@@ -608,10 +616,18 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const hsSeries = hsSeriesFull.slice(0, rangeYears + 1);
     const mlSeries = mlSeriesFull.slice(0, rangeYears + 1);
 
-    const padL = 60, padR = 12, padT = 26, padB = 28;
-    const w = 600, h = 300;
+    const mobile = isMobileView();
+    // Size the coordinate system to the chart's actual rendered width, so text
+    // renders at true size on any device instead of being scaled down to fit
+    // a fixed 600-unit canvas on a ~340px phone screen.
+    const w = Math.max(280, Math.round(svg.getBoundingClientRect().width)) || 600;
+    const h = mobile ? 300 : 300;
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+    const padL = mobile ? 50 : 58, padR = 10, padT = 26, padB = 30;
     const plotW = w - padL - padR, plotH = h - padT - padB;
+    const axisFont = mobile ? 12 : 11;
+    const valueFont = mobile ? 13 : 12;
 
     // Zoom the Y-axis into the actual data range instead of always starting at $0,
     // so the lines use the available space rather than sitting in a mostly-empty chart.
@@ -633,7 +649,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       const val = minVal + ((maxVal - minVal) / gridSteps) * i;
       const gy = y(val);
       svg.appendChild(svgEl('line', {x1:padL, y1:gy, x2:w-padR, y2:gy, stroke:'#D7E3F0', 'stroke-width':1}));
-      const label = svgEl('text', {x:padL-8, y:gy+4, 'text-anchor':'end', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+      const label = svgEl('text', {x:padL-8, y:gy+4, 'text-anchor':'end', 'font-size':axisFont, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
       label.textContent = '$' + Math.round(val / 1000) + 'k';
       svg.appendChild(label);
     }
@@ -642,7 +658,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const xStep = rangeYears <= 10 ? 1 : (rangeYears <= 20 ? 2 : 5);
     for (let yr = 0; yr <= rangeYears; yr += xStep){
       const gx = x(yr);
-      const label = svgEl('text', {x:gx, y:h-8, 'text-anchor':'middle', 'font-size':10, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+      const label = svgEl('text', {x:gx, y:h-8, 'text-anchor':'middle', 'font-size':axisFont, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
       label.textContent = 'Yr ' + yr;
       svg.appendChild(label);
     }
@@ -657,7 +673,9 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     // Value labels: always label the start and end points; if the range is short
     // enough, label every year in between too so the year-on-year change is readable.
     const fmtK = v => '$' + (v / 1000).toFixed(0) + 'k';
-    const labelEvery = rangeYears <= 5 ? 1 : (rangeYears <= 10 ? 2 : null);
+    const labelEvery = mobile
+      ? (rangeYears <= 5 ? 2 : null)
+      : (rangeYears <= 5 ? 1 : (rangeYears <= 10 ? 2 : null));
 
     function pointLabels(series, color, dy){
       series.forEach((v, i) => {
@@ -665,14 +683,14 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
         const isStart = i === 0;
         const onStep = labelEvery && i % labelEvery === 0;
         if (!isStart && !isEnd && !onStep) return;
-        svg.appendChild(svgEl('circle', {cx:x(i), cy:y(v), r:3, fill:color}));
-        const t = svgEl('text', {x:x(i), y:y(v)+dy, 'text-anchor':'middle', 'font-size':10, 'font-weight':'700', fill:color, 'font-family':'Arial, sans-serif'});
+        svg.appendChild(svgEl('circle', {cx:x(i), cy:y(v), r: mobile ? 3.5 : 3, fill:color}));
+        const t = svgEl('text', {x:x(i), y:y(v)+dy, 'text-anchor':'middle', 'font-size':valueFont, 'font-weight':'700', fill:color, 'font-family':'Arial, sans-serif'});
         t.textContent = fmtK(v);
         svg.appendChild(t);
       });
     }
-    pointLabels(hsSeries, '#FF8C03', -10);
-    pointLabels(mlSeries, '#14305F', 16);
+    pointLabels(hsSeries, '#FF8C03', -12);
+    pointLabels(mlSeries, '#14305F', 18);
   }
 
   function renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, targetMonth){
@@ -703,17 +721,88 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const mlPrincipal = Math.max(0, mlRepay - mlInterest);
     const hsShortfall = Math.max(0, hsInterest - hsRepay);
     const hsPaidInterest = Math.min(hsRepay, hsInterest);
-
-    const w = 600, h = 280;
-    const padL = 56, padR = 12, padT = 20, padB = 34;
-    const plotH = h - padT - padB;
     const maxVal = Math.max(hsInterest, mlRepay) * 1.15;
 
-    const barW = 130;
-    const hsX = 140, mlX = 380;
+    // diagonal hatch pattern for HomeStart's unpaid-interest shortfall
+    const defs = svgEl('defs', {});
+    const pattern = svgEl('pattern', {id:'hatch', width:6, height:6, patternTransform:'rotate(45)', patternUnits:'userSpaceOnUse'});
+    pattern.appendChild(svgEl('rect', {width:6, height:6, fill:'#E4E9F1'}));
+    pattern.appendChild(svgEl('line', {x1:0, y1:0, x2:0, y2:6, stroke:'#B9C2D6', 'stroke-width':3}));
+    defs.appendChild(pattern);
+    svg.appendChild(defs);
+
+    const fmtWhole = v => '$' + Math.round(v).toLocaleString('en-AU');
+
+    if (isMobileView()){
+      // Mobile: two full-width horizontal bars, stacked top/bottom, so nothing
+      // has to compete for horizontal space or scroll off screen.
+      const w = Math.max(280, Math.round(svg.getBoundingClientRect().width)) || 340;
+      const h = 260;
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      const padL = 12, padR = 12;
+      const barH = 56;
+      const barW = w - padL - padR;
+      const scaleX = v => (v / maxVal) * barW;
+
+      function hBar(cy, segments, label, totalLabel){
+        const nameLabel = svgEl('text', {x:padL, y:cy - barH/2 - 10, 'font-size':15, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+        nameLabel.textContent = label;
+        svg.appendChild(nameLabel);
+
+        const totalEl = svgEl('text', {x:w - padR, y:cy - barH/2 - 10, 'text-anchor':'end', 'font-size':14, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+        totalEl.textContent = totalLabel;
+        svg.appendChild(totalEl);
+
+        svg.appendChild(svgEl('rect', {x:padL, y:cy - barH/2, width:barW, height:barH, fill:'#EEF3F9', rx:6}));
+
+        let cumulative = 0;
+        segments.forEach(seg => {
+          if (seg.value <= 0) return;
+          const segW = scaleX(seg.value);
+          svg.appendChild(svgEl('rect', {
+            x:padL + scaleX(cumulative), y:cy - barH/2, width:segW, height:barH,
+            fill:seg.fill, stroke: seg.hatch ? '#8FA0C4' : 'none', 'stroke-width': seg.hatch ? 1 : 0,
+          }));
+          if (segW > 58){
+            const segLabel = svgEl('text', {x:padL + scaleX(cumulative) + segW/2, y:cy + 5, 'text-anchor':'middle', 'font-size':13, 'font-weight':'700', fill:'#fff', 'font-family':'Arial, sans-serif'});
+            segLabel.textContent = fmtWhole(seg.value);
+            svg.appendChild(segLabel);
+          } else if (seg.value > 0){
+            // Segment too narrow to hold its own label — place it just above the bar instead
+            const segLabel = svgEl('text', {x:padL + scaleX(cumulative) + segW/2, y:cy + barH/2 + 16, 'text-anchor':'middle', 'font-size':11, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+            segLabel.textContent = fmtWhole(seg.value);
+            svg.appendChild(segLabel);
+          }
+          cumulative += seg.value;
+        });
+      }
+
+      hBar(74, [
+        {value: hsPaidInterest, fill:'#7C93B5'},
+        {value: hsShortfall, fill:'url(#hatch)', hatch:true},
+      ], 'HomeStart', fmtWhole(hsRepay) + ' paid');
+
+      hBar(206, [
+        {value: mlInterest, fill:'#7C93B5'},
+        {value: mlPrincipal, fill:'#FF8C03'},
+      ], 'Mainstream lender', fmtWhole(mlRepay) + ' paid');
+
+      return;
+    }
+
+    // Desktop: vertical stacked bars side by side
+    const w = Math.max(400, Math.round(svg.getBoundingClientRect().width)) || 600;
+    const h = 280;
+    const padL = 60, padR = 12, padT = 20, padB = 34;
+    const plotH = h - padT - padB;
+
+    const barW = w * 0.22;
+    const hsX = w * 0.23, mlX = w * 0.63;
 
     const scaleY = v => (v / maxVal) * plotH;
     const topY = v => padT + plotH - scaleY(v);
+
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
     // gridlines
     const gridSteps = 4;
@@ -742,14 +831,6 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       xAxisLabel.textContent = label;
       svg.appendChild(xAxisLabel);
     }
-
-    // diagonal hatch pattern for HomeStart's unpaid-interest shortfall
-    const defs = svgEl('defs', {});
-    const pattern = svgEl('pattern', {id:'hatch', width:6, height:6, patternTransform:'rotate(45)', patternUnits:'userSpaceOnUse'});
-    pattern.appendChild(svgEl('rect', {width:6, height:6, fill:'#E4E9F1'}));
-    pattern.appendChild(svgEl('line', {x1:0, y1:0, x2:0, y2:6, stroke:'#B9C2D6', 'stroke-width':3}));
-    defs.appendChild(pattern);
-    svg.appendChild(defs);
 
     stackedBar(hsX, [
       {value: hsPaidInterest, fill:'#7C93B5'},
