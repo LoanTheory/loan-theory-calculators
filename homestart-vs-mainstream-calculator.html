@@ -107,6 +107,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   .calc-title-bar{padding:24px 32px 0;}
   .calc-title-bar h2{font-size:26px;}
   .calc-title-bar .accent{color:var(--orange);}
+  .calc-title-blurb{font-family:var(--font-body);font-size:14px;letter-spacing:0;line-height:1.4;color:var(--text);margin:6px 0 0;}
   .calc-grid{display:grid;grid-template-columns:1fr;align-items:stretch;}
   .calc-inputs{padding:18px 24px 24px;}
   .field{margin-bottom:20px;}
@@ -146,6 +147,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     border:5px solid transparent;border-top-color:var(--navy);
   }
   .info-bubble:hover .info-tooltip,.info-bubble:focus .info-tooltip{opacity:1;visibility:visible;}
+  .info-bubble.inverse{background:#fff;color:var(--navy);}
   @media print{.info-bubble{display:none;}}
 
   /* field styling matched to the rounded white fields used in your live site's forms */
@@ -212,7 +214,6 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   @media (max-width:600px){
     .savings-row{flex-direction:column;align-items:flex-start;gap:4px;}
   }
-  .lvr-note{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text);margin-top:12px;}
 
   .more-info{margin-top:16px;}
   .more-info summary{
@@ -282,12 +283,13 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     <div class="calc">
       <div class="calc-title-bar">
         <h2 class="h-subheading" style="color:var(--orange);">HomeStart Comparison Calculator</h2>
+        <p class="calc-title-blurb">An estimate of the repayment change, interest savings and loan balance change between your HomeStart loan and a mainstream lender.</p>
       </div>
       <div class="calc-grid">
         <div class="calc-inputs">
           <div class="field">
             <label for="loanType">HomeStart loan type
-              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Your repayment factor depends on loan type: Low Deposit Loans use 160, Graduate and Shared Equity loans use 170.</span></span>
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Your repayment is your loan amount divided by a multiple: 160 for a Low Deposit Loan, or 170 for all other primary loans (Graduate and Shared Equity).</span></span>
             </label>
             <select id="loanType" onchange="trackEngagement();onLoanTypeChange()">
               <option value="graduate">Graduate Home Loan</option>
@@ -305,23 +307,18 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
               <span class="info-bubble" tabindex="0">i<span class="info-tooltip">HomeStart calculates your fixed repayment from this original settlement amount, not your current outstanding balance.</span></span>
             </label>
             <input type="text" inputmode="numeric" id="loanAmount" value="500,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
-            <div class="hint">HomeStart calculates your repayment from your loan amount at settlement, not your current balance — use the figure from your original loan documents.</div>
-          </div>
-
-          <div class="field">
-            <label for="propertyValue">Current property value ($)</label>
-            <input type="text" inputmode="numeric" id="propertyValue" value="750,000" oninput="trackEngagement();formatMoneyInput(this);calculate()">
           </div>
 
           <div class="field-row">
-            <label for="hsRate" class="fr-label">Your HomeStart rate (%)</label>
+            <label for="hsRate" class="fr-label">Your HomeStart rate (%)
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Enter the rate found on your latest HomeStart statement.</span></span>
+            </label>
             <label for="mlRate" class="fr-label">Mainstream lender rate (%)
-              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">This defaults to standard LVR-tiered pricing based on your figures above, but you can overwrite it with an actual quote.</span></span>
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">6.04% is a general guide rate. Reach out to us to find out what rate might be suitable for your situation.</span></span>
             </label>
             <input type="number" id="hsRate" class="fr-input" value="8.64" min="0" step="0.01" oninput="trackEngagement();calculate()">
-            <input type="number" id="mlRate" class="fr-input" value="5.99" min="0" step="0.01" oninput="trackEngagement();mlRateEdited=true;calculate()">
+            <input type="number" id="mlRate" class="fr-input" value="6.04" min="0" step="0.01" oninput="trackEngagement();calculate()">
           </div>
-          <div class="hint" id="rateHint" style="margin-top:-8px;"></div>
         </div>
 
         <div class="ledger">
@@ -347,15 +344,21 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 
           <div class="savings-block" id="savingsBlock">
             <div class="savings-row">
-              <span class="savings-label">Monthly repayment difference</span>
+              <span class="savings-label">Estimated monthly repayment change
+                <span class="info-bubble inverse" tabindex="0">i<span class="info-tooltip" id="repayDiffTooltip">Your monthly repayment changes based on the figures entered above.</span></span>
+              </span>
               <span class="savings-value" id="outRepayDiff">–</span>
             </div>
             <div class="savings-row">
-              <span class="savings-label">Monthly interest savings</span>
+              <span class="savings-label">Estimated monthly interest savings
+                <span class="info-bubble inverse" tabindex="0">i<span class="info-tooltip">This is the possible interest saving you could make in month 1, comparing your current HomeStart loan to a mainstream lender.</span></span>
+              </span>
               <span class="savings-value" id="outInterestDiff">–</span>
             </div>
             <div class="savings-row">
-              <span class="savings-label">First 12 months' interest savings</span>
+              <span class="savings-label">Estimated first 12 months' interest savings
+                <span class="info-bubble inverse" tabindex="0">i<span class="info-tooltip">This is the possible interest saving you could make in the first 12 months, comparing your current HomeStart loan to a mainstream lender, assuming no changes to interest rates or repayments.</span></span>
+              </span>
               <span class="savings-value" id="out12moDiff">–</span>
             </div>
           </div>
@@ -368,7 +371,6 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             </div>
           </details>
 
-          <div class="lvr-note" id="lvrNote"></div>
         </div>
       </div>
 
@@ -376,10 +378,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
         <div class="chart-panel">
           <div class="chart-panel-head">
             <div>
-              <h3 class="chart-title">Loan balance over time
+              <h3 class="chart-title">Estimated loan balance over time
                 <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Because of how HomeStart repayments are calculated and the current interest rate, your HomeStart balance can increase over time. A mainstream lender's repayment is designed to cover the interest charged and steadily reduce your loan over the loan term.</span></span>
               </h3>
-              <p class="chart-sub">How much you'd still owe, if nothing else changes</p>
+              <p class="chart-sub">The possible change to your HomeStart loan balance versus a mainstream lender's loan balance over time. This assumes no additional repayments, offset balances, interest rate changes, or HomeStart's annual indexation repayment change.</p>
             </div>
             <select id="balanceChartRange" class="chart-range-select" onchange="trackEngagement();onBalanceRangeChange()">
               <option value="5">5 years</option>
@@ -400,10 +402,10 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
         <div class="chart-panel">
           <div class="chart-panel-head">
             <div>
-              <h3 class="chart-title"><span id="repaymentChartTitle">Where your month 1 repayment goes</span>
+              <h3 class="chart-title"><span id="repaymentChartTitle">HomeStart vs mainstream lender repayment breakdown</span>
                 <span class="info-bubble" tabindex="0">i<span class="info-tooltip">If HomeStart's repayment doesn't cover that month's interest, no principal is paid down — the shortfall is added to your loan balance instead. If the repayment is more than the interest (e.g. at a lower rate), the difference is principal paid down, just like a standard loan.</span></span>
               </h3>
-              <p class="chart-sub">Interest cost vs. principal paid down</p>
+              <p class="chart-sub">The HomeStart repayment is calculated without taking into account the monthly interest charged, or ensuring the principal is paid down over a set period of time. The mainstream lender repayment is calculated to cover the cost of the monthly interest charged and ensure the principal balance is paid down over the term of the loan.</p>
             </div>
             <select id="repaymentMonthSelect" class="chart-range-select" onchange="trackEngagement();onRepaymentMonthChange()">
               <option value="1">Month 1</option>
@@ -477,19 +479,11 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   function onLoanTypeChange(){
     const type = document.getElementById('loanType').value;
     document.getElementById('hsRate').value = RATE_DEFAULTS[type];
-    document.getElementById('rateHint').textContent = RATE_HINTS[type];
     document.getElementById('sharedEquityWarning').style.display = (type === 'sharedEquity') ? 'block' : 'none';
     calculate();
   }
 
   const LOAN_TERM_YEARS = 30;
-  let mlRateEdited = false;
-
-  function mainstreamRate(lvr){
-    if (lvr <= 0.80) return 5.99;
-    if (lvr <= 0.90) return 6.19;
-    return 6.38;
-  }
 
   function pmt(monthlyRate, numPayments, principal){
     if (monthlyRate === 0) return principal / numPayments;
@@ -499,19 +493,11 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
   function calculate(){
     const loanType = document.getElementById('loanType').value;
     const loanAmount = parseFloat(document.getElementById('loanAmount').value.replace(/,/g, '')) || 0;
-    const propertyValue = parseFloat(document.getElementById('propertyValue').value.replace(/,/g, '')) || 0;
     const hsRatePct = parseFloat(document.getElementById('hsRate').value) || 0;
+    const mlRatePct = parseFloat(document.getElementById('mlRate').value) || 0;
     const termYears = LOAN_TERM_YEARS;
 
-    if (loanAmount <= 0 || propertyValue <= 0) return;
-
-    const lvr = loanAmount / propertyValue;
-
-    // Auto-suggest the mainstream rate from LVR until the user edits it themselves
-    if (!mlRateEdited){
-      document.getElementById('mlRate').value = mainstreamRate(lvr);
-    }
-    const mlRatePct = parseFloat(document.getElementById('mlRate').value) || 0;
+    if (loanAmount <= 0) return;
 
     const divisor = REPAY_DIVISOR[loanType];
     const hsMonthlyRepay = loanAmount / divisor;
@@ -552,8 +538,12 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     document.getElementById('outInterestDiff').textContent = (interestDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(interestDiff));
     document.getElementById('out12moDiff').textContent = (twelveMoDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(twelveMoDiff));
 
-    document.getElementById('lvrNote').textContent =
-      `Your LVR is ${(lvr*100).toFixed(1)}%. The mainstream rate defaults to our standard LVR-tiered pricing, but you can overwrite it above if your quote differs.`;
+    const repayDiffTooltip = document.getElementById('repayDiffTooltip');
+    if (repayDiffTooltip){
+      repayDiffTooltip.textContent = repayDiff >= 0
+        ? `Your monthly repayment has decreased by ${fmtMoney(Math.abs(repayDiff))} per month.`
+        : `Your monthly repayment has increased by ${fmtMoney(Math.abs(repayDiff))} per month.`;
+    }
 
     renderBalanceChart(loanAmount, hsRatePct, mlRatePct, divisor, termYears, getSelectedChartRange());
     renderRepaymentChart(loanAmount, hsRatePct, mlRatePct, divisor, getSelectedRepaymentMonth());
@@ -715,9 +705,6 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
     const svg = document.getElementById('repaymentChart');
     svg.innerHTML = '';
 
-    const titleEl = document.getElementById('repaymentChartTitle');
-    if (titleEl) titleEl.textContent = `Where your month ${targetMonth} repayment goes`;
-
     const hsMonthlyRate = (hsRatePct / 100) / 12;
     const mlMonthlyRate = (mlRatePct / 100) / 12;
     const fullMonths = LOAN_TERM_YEARS * 12;
@@ -756,21 +743,21 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       // Mobile: two full-width horizontal bars, stacked top/bottom, so nothing
       // has to compete for horizontal space or scroll off screen.
       const w = Math.max(280, Math.round(svg.getBoundingClientRect().width)) || 340;
-      const h = 260;
+      const h = 300;
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
       const padL = 12, padR = 12;
-      const barH = 56;
+      const barH = 52;
       const barW = w - padL - padR;
       const scaleX = v => (v / maxVal) * barW;
 
-      function hBar(cy, segments, label, totalLabel){
-        const nameLabel = svgEl('text', {x:padL, y:cy - barH/2 - 10, 'font-size':15, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+      function hBar(cy, segments, label, interestTotal, repayTotal){
+        const nameLabel = svgEl('text', {x:padL, y:cy - barH/2 - 22, 'font-size':15, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
         nameLabel.textContent = label;
         svg.appendChild(nameLabel);
 
-        const totalEl = svgEl('text', {x:w - padR, y:cy - barH/2 - 10, 'text-anchor':'end', 'font-size':14, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
-        totalEl.textContent = totalLabel;
-        svg.appendChild(totalEl);
+        const interestLabel = svgEl('text', {x:w - padR, y:cy - barH/2 - 22, 'text-anchor':'end', 'font-size':13, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+        interestLabel.textContent = 'Interest: ' + fmtWhole(interestTotal);
+        svg.appendChild(interestLabel);
 
         svg.appendChild(svgEl('rect', {x:padL, y:cy - barH/2, width:barW, height:barH, fill:'#EEF3F9', rx:6}));
 
@@ -782,30 +769,29 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
             x:padL + scaleX(cumulative), y:cy - barH/2, width:segW, height:barH,
             fill:seg.fill, stroke: seg.hatch ? '#8FA0C4' : 'none', 'stroke-width': seg.hatch ? 1 : 0,
           }));
-          if (segW > 58){
-            const segLabel = svgEl('text', {x:padL + scaleX(cumulative) + segW/2, y:cy + 5, 'text-anchor':'middle', 'font-size':13, 'font-weight':'700', fill:'#fff', 'font-family':'Arial, sans-serif'});
-            segLabel.textContent = fmtWhole(seg.value);
-            svg.appendChild(segLabel);
-          } else if (seg.value > 0){
-            // Segment too narrow to hold its own label — place it just above the bar instead
-            const segLabel = svgEl('text', {x:padL + scaleX(cumulative) + segW/2, y:cy + barH/2 + 16, 'text-anchor':'middle', 'font-size':11, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+          if (segW > 56){
+            const segLabel = svgEl('text', {x:padL + scaleX(cumulative) + segW/2, y:cy + 5, 'text-anchor':'middle', 'font-size':12, 'font-weight':'700', fill:'#fff', 'font-family':'Arial, sans-serif'});
             segLabel.textContent = fmtWhole(seg.value);
             svg.appendChild(segLabel);
           }
           cumulative += seg.value;
         });
+
+        const captionLabel = svgEl('text', {x:padL + barW/2, y:cy + barH/2 + 20, 'text-anchor':'middle', 'font-size':12, fill:'#7C93B5', 'font-family':'Arial, sans-serif'});
+        captionLabel.textContent = `Repayment made: ${fmtWhole(repayTotal)}`;
+        svg.appendChild(captionLabel);
       }
 
-      hBar(74, [
+      hBar(84, [
         {value: hsPaidInterest, fill:'#7C93B5'},
         {value: hsPrincipal, fill:'#FF8C03'},
         {value: hsShortfall, fill:'url(#hatch)', hatch:true},
-      ], 'HomeStart', fmtWhole(hsRepay) + ' paid');
+      ], 'HomeStart', hsInterest, hsRepay);
 
-      hBar(206, [
+      hBar(234, [
         {value: mlInterest, fill:'#7C93B5'},
         {value: mlPrincipal, fill:'#FF8C03'},
-      ], 'Mainstream lender', fmtWhole(mlRepay) + ' paid');
+      ], 'Mainstream lender', mlInterest, mlRepay);
 
       return;
     }
@@ -835,7 +821,7 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       svg.appendChild(label);
     }
 
-    function stackedBar(cx, segments, label){
+    function stackedBar(cx, segments, label, interestTotal){
       let cumulative = 0;
       segments.forEach(seg => {
         if (seg.value <= 0) return;
@@ -845,8 +831,18 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
           x:cx - barW/2, y:yTop, width:barW, height:(yBottom - yTop),
           fill:seg.fill, stroke: seg.hatch ? '#8FA0C4' : 'none', 'stroke-width': seg.hatch ? 1 : 0,
         }));
+        if ((yBottom - yTop) > 22){
+          const segLabel = svgEl('text', {x:cx, y:(yTop+yBottom)/2 + 4, 'text-anchor':'middle', 'font-size':11, 'font-weight':'700', fill:'#fff', 'font-family':'Arial, sans-serif'});
+          segLabel.textContent = fmtWhole(seg.value);
+          svg.appendChild(segLabel);
+        }
         cumulative += seg.value;
       });
+
+      const interestLabel = svgEl('text', {x:cx, y:topY(cumulative) - 10, 'text-anchor':'middle', 'font-size':13, 'font-weight':'700', fill:'#14305F', 'font-family':'Arial, sans-serif'});
+      interestLabel.textContent = 'Interest: ' + fmtWhole(interestTotal);
+      svg.appendChild(interestLabel);
+
       const xAxisLabel = svgEl('text', {x:cx, y:h-10, 'text-anchor':'middle', 'font-size':12, fill:'#14305F', 'font-family':'Arial, sans-serif', 'font-weight':'700'});
       xAxisLabel.textContent = label;
       svg.appendChild(xAxisLabel);
@@ -856,12 +852,12 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
       {value: hsPaidInterest, fill:'#7C93B5'},
       {value: hsPrincipal, fill:'#FF8C03'},
       {value: hsShortfall, fill:'url(#hatch)', hatch:true},
-    ], 'HomeStart');
+    ], 'HomeStart', hsInterest);
 
     stackedBar(mlX, [
       {value: mlInterest, fill:'#7C93B5'},
       {value: mlPrincipal, fill:'#FF8C03'},
-    ], 'Mainstream lender');
+    ], 'Mainstream lender', mlInterest);
   }
 
   onLoanTypeChange();
