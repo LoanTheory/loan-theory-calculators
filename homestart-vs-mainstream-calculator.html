@@ -13,16 +13,8 @@ window.relayPixelEvent = function(eventName, params){
 };
 </script>
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'HS Tool 01' });
+// This widget has no pixel of its own. Every event is relayed to the parent
+// page (loantheory.com.au), which holds the one real Meta pixel instance.
 window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
 </script>
 <style>
@@ -452,16 +444,10 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
   function trackEngagement(){
     if(hasEngaged) return;
     hasEngaged = true;
-    if(typeof fbq === 'function'){
-      fbq('trackCustom', 'HSTool01Engaged', { content_name: CALC_NAME });
-    }
     window.relayPixelEvent('HSTool01Engaged', { content_name: CALC_NAME });
   }
   // Fires when the Print / Save as PDF button is clicked
   window.trackCompleteRegistration = function(){
-    if(typeof fbq === 'function'){
-      fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
-    }
     // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
     // since this widget sits in an iframe and the parent page's own pixel/CAPI
     // setup handles the actual event on its side.
