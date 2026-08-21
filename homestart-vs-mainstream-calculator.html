@@ -14,7 +14,7 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
+fbq('track', 'PageView', { content_name: 'HS Tool 01' });
 </script>
 <style>
   @font-face{
@@ -438,18 +438,16 @@ fbq('track', 'PageView', { content_name: 'HomeStart Comparison Calculator' });
 </section>
 
 <script>
-  var CALC_NAME = 'HomeStart Comparison Calculator';
+  var CALC_NAME = 'HS Tool 01';
   var hasEngaged = false;
   function trackEngagement(){
     if(hasEngaged) return;
     hasEngaged = true;
     if(typeof fbq === 'function'){
-      fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
+      fbq('trackCustom', 'HSTool01Engaged', { content_name: CALC_NAME });
     }
   }
-  // No Print/Save as PDF action exists on this widget, so CompleteRegistration
-  // isn't wired up yet. If a CTA (e.g. "Speak to a broker") is added later,
-  // call this on its click handler:
+  // Fires when the Print / Save as PDF button is clicked
   window.trackCompleteRegistration = function(){
     if(typeof fbq === 'function'){
       fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
