@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HomeStart vs Mainstream Lender — Loan Theory</title>
 <script>
+// Relays every pixel event fired inside this widget to the parent page
+// (loantheory.com.au), since the widget sits in an iframe and the parent
+// page's own pixel/CAPI setup handles the actual event on its side.
+window.relayPixelEvent = function(eventName, params){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params }, 'https://www.loantheory.com.au');
+};
+</script>
+<script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -15,6 +23,7 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '1483602183397547');
 fbq('track', 'PageView', { content_name: 'HS Tool 01' });
+window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
 </script>
 <style>
   @font-face{
@@ -446,12 +455,17 @@ fbq('track', 'PageView', { content_name: 'HS Tool 01' });
     if(typeof fbq === 'function'){
       fbq('trackCustom', 'HSTool01Engaged', { content_name: CALC_NAME });
     }
+    window.relayPixelEvent('HSTool01Engaged', { content_name: CALC_NAME });
   }
   // Fires when the Print / Save as PDF button is clicked
   window.trackCompleteRegistration = function(){
     if(typeof fbq === 'function'){
       fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
     }
+    // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
+    // since this widget sits in an iframe and the parent page's own pixel/CAPI
+    // setup handles the actual event on its side.
+    window.relayPixelEvent('CompleteRegistration', { content_name: 'HomeStart Calculator' });
   };
 
   const RATE_DEFAULTS = { graduate: 8.64, sharedEquity: 8.64, lowDeposit: 8.64 };
