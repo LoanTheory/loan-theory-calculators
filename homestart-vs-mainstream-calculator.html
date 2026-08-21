@@ -447,7 +447,10 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
     window.relayPixelEvent('HSTool01Engaged', { content_name: CALC_NAME });
   }
   // Fires when the Print / Save as PDF button is clicked
+  var hasCompletedRegistration = false;
   window.trackCompleteRegistration = function(){
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
     // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
     // since this widget sits in an iframe and the parent page's own pixel/CAPI
     // setup handles the actual event on its side.
