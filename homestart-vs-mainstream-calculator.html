@@ -8,8 +8,8 @@
 // Relays every pixel event fired inside this widget to the parent page
 // (loantheory.com.au), since the widget sits in an iframe and the parent
 // page's own pixel/CAPI setup handles the actual event on its side.
-window.relayPixelEvent = function(eventName, params){
-  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params }, 'https://www.loantheory.com.au');
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
 };
 </script>
 <script>
@@ -440,21 +440,27 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
 
 <script>
   var CALC_NAME = 'HS Tool 01';
+
+  function makeEventId(){
+    return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  }
   var hasEngaged = false;
   function trackEngagement(){
     if(hasEngaged) return;
     hasEngaged = true;
-    window.relayPixelEvent('HSTool01Engaged', { content_name: CALC_NAME });
+    var eventId = makeEventId();
+    window.relayPixelEvent('HSTool01Engaged', { content_name: CALC_NAME }, eventId);
   }
   // Fires when the Print / Save as PDF button is clicked
   var hasCompletedRegistration = false;
   window.trackCompleteRegistration = function(){
     if(hasCompletedRegistration) return;
     hasCompletedRegistration = true;
+    var eventId = makeEventId();
     // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
     // since this widget sits in an iframe and the parent page's own pixel/CAPI
     // setup handles the actual event on its side.
-    window.relayPixelEvent('CompleteRegistration', { content_name: 'HomeStart Calculator' });
+    window.relayPixelEvent('CompleteRegistration', { content_name: 'HomeStart Calculator' }, eventId);
   };
 
   const RATE_DEFAULTS = { graduate: 8.64, sharedEquity: 8.64, lowDeposit: 8.64 };
