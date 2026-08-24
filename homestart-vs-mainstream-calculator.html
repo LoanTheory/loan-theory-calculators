@@ -18,9 +18,9 @@ window.relayPixelEvent = function(eventName, params, eventId){
 <script>
 // This widget has no pixel of its own. Every event is relayed to the parent
 // page (loantheory.com.au), which holds the one real Meta pixel instance.
-// Named HSCalcPageView (not the generic PageView) so this specific calculator's
+// Named HSToolPageView (not the generic PageView) so this specific calculator's
 // views can be targeted as their own audience.
-window.relayPixelEvent('HSCalcPageView', { content_name: 'HS Tool 01' }, makeEventId());
+window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool 01' }, makeEventId());
 </script>
 <style>
   @font-face{
@@ -459,10 +459,10 @@ window.relayPixelEvent('HSCalcPageView', { content_name: 'HS Tool 01' }, makeEve
     if(hasCompletedRegistration) return;
     hasCompletedRegistration = true;
     var eventId = makeEventId();
-    // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
+    // Relay an HSToolPrint event to the parent page (loantheory.com.au),
     // since this widget sits in an iframe and the parent page's own pixel/CAPI
     // setup handles the actual event on its side.
-    window.relayPixelEvent('CompleteRegistration', { content_name: 'HomeStart Calculator' }, eventId);
+    window.relayPixelEvent('HSToolPrint', { content_name: 'HomeStart Calculator' }, eventId);
   };
 
   const RATE_DEFAULTS = { graduate: 8.64, sharedEquity: 8.64, lowDeposit: 8.64 };
