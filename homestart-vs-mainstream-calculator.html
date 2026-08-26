@@ -507,7 +507,7 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
     const interestDiff = hsMonth1Interest - mlMonth1Interest;
     const twelveMoDiff = hsInterest12 - mlInterest12;
 
-    document.getElementById('outRepayDiff').textContent = (repayDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(repayDiff));
+    document.getElementById('outRepayDiff').textContent = (repayDiff >= 0 ? '−' : '+') + fmtMoney(Math.abs(repayDiff));
     document.getElementById('outInterestDiff').textContent = (interestDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(interestDiff));
     document.getElementById('out12moDiff').textContent = (twelveMoDiff >= 0 ? '' : '−') + fmtMoney(Math.abs(twelveMoDiff));
 
