@@ -8,6 +8,9 @@
 // Relays every pixel event fired inside this widget to the parent page
 // (loantheory.com.au), since the widget sits in an iframe and the parent
 // page's own pixel/CAPI setup handles the actual event on its side.
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
 window.relayPixelEvent = function(eventName, params, eventId){
   window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
 };
@@ -15,7 +18,9 @@ window.relayPixelEvent = function(eventName, params, eventId){
 <script>
 // This widget has no pixel of its own. Every event is relayed to the parent
 // page (loantheory.com.au), which holds the one real Meta pixel instance.
-window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
+// Named HSToolPageView (not the generic PageView) so this specific calculator's
+// views can be targeted as their own audience.
+window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool 01' }, makeEventId());
 </script>
 <style>
   @font-face{
@@ -407,9 +412,6 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
 <script>
   var CALC_NAME = 'HS Tool 01';
 
-  function makeEventId(){
-    return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  }
   var hasEngaged = false;
   function trackEngagement(){
     if(hasEngaged) return;
@@ -423,10 +425,10 @@ window.relayPixelEvent('PageView', { content_name: 'HS Tool 01' });
     if(hasCompletedRegistration) return;
     hasCompletedRegistration = true;
     var eventId = makeEventId();
-    // Relay a CompleteRegistration event to the parent page (loantheory.com.au),
+    // Relay an HSToolPrint event to the parent page (loantheory.com.au),
     // since this widget sits in an iframe and the parent page's own pixel/CAPI
     // setup handles the actual event on its side.
-    window.relayPixelEvent('CompleteRegistration', { content_name: 'HomeStart Calculator' }, eventId);
+    window.relayPixelEvent('HSToolPrint', { content_name: 'HomeStart Calculator' }, eventId);
   };
 
   const RATE_DEFAULTS = { graduate: 8.64, sharedEquity: 8.64, lowDeposit: 8.64 };
