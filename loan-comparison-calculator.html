@@ -53,6 +53,10 @@
     max-width:1180px;
     margin:0 auto;
     padding:28px 28px 20px;
+    background:#fff;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 2px 24px rgba(20,48,95,0.08);
   }
 
   h1.lt-title{
@@ -424,18 +428,14 @@
 </head>
 <body>
 
-<!-- ===================== META PIXEL BASE CODE ===================== -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'Loan Comparison Calculator' });
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
+};
+window.relayPixelEvent('LCToolPageView', { content_name: 'LC Tool 01' }, makeEventId());
 </script>
 <!-- =================================================================== -->
 
@@ -476,7 +476,7 @@ fbq('track', 'PageView', { content_name: 'Loan Comparison Calculator' });
   <div id="overallSavingsBox"></div>
 
   <div class="lt-actions">
-    <button class="lt-print" id="printBtn" type="button" onclick="trackPrint(); window.print();">Print / save as PDF</button>
+    <button class="lt-print" id="printBtn" type="button" onclick="trackPrint(); window.print();">Print / Save as PDF</button>
   </div>
 
   <p class="lt-small-print">
@@ -491,21 +491,19 @@ fbq('track', 'PageView', { content_name: 'Loan Comparison Calculator' });
 
 <script>
 /* ============================ META PIXEL ENGAGEMENT/PRINT HELPERS ============================ */
-var CALC_NAME = 'Loan Comparison Calculator';
-var hasEngaged = false;
-function trackEngagement(){
-  if(hasEngaged) return;
-  hasEngaged = true;
-  if(typeof fbq === 'function'){
-    fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
+  var CALC_NAME = 'LC Tool 01';
+  var hasEngaged = false;
+  function trackEngagement(){
+    if(hasEngaged) return;
+    hasEngaged = true;
+    window.relayPixelEvent('LCTool01Engaged', { content_name: CALC_NAME }, makeEventId());
   }
-}
-window.trackPrint = function(){
-  if(typeof fbq === 'function'){
-    fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
-  }
-};
-
+  var hasCompletedRegistration = false;
+  window.trackPrint = function(){
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
+    window.relayPixelEvent('LCToolPrint', { content_name: CALC_NAME }, makeEventId());
+  };
 /* ============================ STATE ============================ */
 var loanIdCounter = 0;
 var loans = []; // {id, name, upfront, ongoing, hasFixed, fixedRate, fixedYears, revertRate}

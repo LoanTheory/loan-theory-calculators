@@ -318,7 +318,7 @@ body{
 @media (max-width: 900px){
   .tier-wrap{ grid-template-columns:1fr; }
 }
-@media (max-width: 640px){
+@media (max-width:600px){
   .body-pad{ padding:20px 18px 26px 18px; }
   .title-bar{ padding:18px 18px 14px 18px; }
   .field-grid{ grid-template-columns:1fr; gap:14px; }
@@ -331,16 +331,13 @@ body{
 }
 </style>
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'Deposit & Cost of Purchase Calculator' });
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
+};
+window.relayPixelEvent('DPToolPageView', { content_name: 'DP Tool 01' }, makeEventId());
 </script>
 </head>
 <body>
@@ -439,21 +436,19 @@ fbq('track', 'PageView', { content_name: 'Deposit & Cost of Purchase Calculator'
 <script>
 (function(){
 
-var CALC_NAME = 'Deposit & Cost of Purchase Calculator';
-var hasEngaged = false;
-function trackEngagement(){
-  if(hasEngaged) return;
-  hasEngaged = true;
-  if(typeof fbq === 'function'){
-    fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
+  var CALC_NAME = 'DP Tool 01';
+  var hasEngaged = false;
+  function trackEngagement(){
+    if(hasEngaged) return;
+    hasEngaged = true;
+    window.relayPixelEvent('DPTool01Engaged', { content_name: CALC_NAME }, makeEventId());
   }
-}
-window.trackPrint = function(){
-  if(typeof fbq === 'function'){
-    fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
-  }
-};
-
+  var hasCompletedRegistration = false;
+  window.trackPrint = function(){
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
+    window.relayPixelEvent('DPToolPrint', { content_name: CALC_NAME }, makeEventId());
+  };
 function fmt(n){
   n = Math.round(n);
   return '$' + n.toLocaleString('en-AU');

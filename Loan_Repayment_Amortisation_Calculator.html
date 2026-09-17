@@ -21,10 +21,10 @@
 :root{
   --orange:#FF8C03;
   --navy:#14305F;
-  --ledger-bg:rgba(222,235,246,0.35);
+  --ledger-bg:#F3F8FC;
   --body-text:#414141;
   --white:#FFFFFF;
-  --border:#D8DEE6;
+  --border:#D5DCE6;
 }
 
 *{box-sizing:border-box;}
@@ -105,7 +105,7 @@ html,body{
   gap:20px;
 }
 
-@media (max-width:700px){
+@media (max-width:600px){
   .lt-field-grid{grid-template-columns:1fr;}
 }
 
@@ -157,7 +157,7 @@ html,body{
   align-items:end;
   margin-bottom:10px;
   padding:12px;
-  background:rgba(222,235,246,0.25);
+  background:var(--ledger-bg);
   border-radius:15px;
 }
 
@@ -254,7 +254,7 @@ html,body{
   gap:16px;
 }
 
-@media (max-width:520px){
+@media (max-width:600px){
   .lt-savings-block{grid-template-columns:1fr;}
   .lt-ledger-columns{grid-template-columns:1fr;}
 }
@@ -459,6 +459,15 @@ table.lt-schedule-table{
   .lt-schedule-table thead th{ position:static; }
 }
 </style>
+<script>
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
+};
+window.relayPixelEvent('LRToolPageView', { content_name: 'LR Tool 01' }, makeEventId());
+</script>
 </head>
 <body>
 
@@ -621,6 +630,20 @@ table.lt-schedule-table{
 <script>
 (function(){
 
+  var CALC_NAME = 'LR Tool 01';
+  var hasEngaged = false;
+  function trackEngagement(){
+    if(hasEngaged) return;
+    hasEngaged = true;
+    window.relayPixelEvent('LRTool01Engaged', { content_name: CALC_NAME }, makeEventId());
+  }
+  var hasCompletedRegistration = false;
+  window.trackPrint = function(){
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
+    window.relayPixelEvent('LRToolPrint', { content_name: CALC_NAME }, makeEventId());
+  };
+
   function parseNum(str){
     if(typeof str !== 'string') return Number(str) || 0;
     var cleaned = str.replace(/[^0-9.\-]/g,'');
@@ -658,6 +681,7 @@ table.lt-schedule-table{
   // Comma-formatted currency inputs
   function attachCommaFormatting(input){
     input.addEventListener('input', function(){
+      trackEngagement();
       var caretFromEnd = input.value.length - input.selectionStart;
       var raw = parseNum(input.value);
       input.value = raw === 0 ? '' : formatNumberInput(raw);
@@ -678,8 +702,8 @@ table.lt-schedule-table{
 
   attachCommaFormatting(loanAmountEl);
   attachCommaFormatting(extraMonthlyEl);
-  interestRateEl.addEventListener('input', recalculate);
-  loanTermEl.addEventListener('input', recalculate);
+  interestRateEl.addEventListener('input', function(){ trackEngagement(); recalculate(); });
+  loanTermEl.addEventListener('input', function(){ trackEngagement(); recalculate(); });
 
   // ---- Lump sum rows ----
   var lumpsumList = document.getElementById('lumpsumList');
@@ -708,7 +732,7 @@ table.lt-schedule-table{
 
     var amountInput = row.querySelector('.lump-amount');
     attachCommaFormatting(amountInput);
-    row.querySelector('.lump-month').addEventListener('input', recalculate);
+    row.querySelector('.lump-month').addEventListener('input', function(){ trackEngagement(); recalculate(); });
     row.querySelector('.lt-remove-btn').addEventListener('click', function(){
       row.remove();
       lumpsumRows = lumpsumRows.filter(function(r){ return r !== id; });
@@ -954,6 +978,7 @@ table.lt-schedule-table{
 
   // ---- Print / Save as PDF ----
   document.getElementById('printBtn').addEventListener('click', function(){
+    trackPrint();
     var scheduleContent = document.getElementById('scheduleContent');
     var chartContent = document.getElementById('chartContent');
     var scheduleWasHidden = scheduleContent.hasAttribute('hidden');

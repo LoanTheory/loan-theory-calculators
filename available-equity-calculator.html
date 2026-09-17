@@ -61,6 +61,9 @@
     max-width:1180px;
     margin:0 auto;
     background:var(--white);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 2px 24px rgba(20,48,95,0.08);
   }
 
   /* ---------- Title ---------- */
@@ -292,6 +295,14 @@
     gap:16px 24px;
   }
   .summary-item{ margin-bottom:2px; }
+  .summary-required{ margin-top:18px; }
+  .summary-note{
+    font-family:var(--body-font);
+    font-size:11px;
+    color:var(--dark-label);
+    line-height:1.4;
+    margin:4px 0 0;
+  }
   .summary-label{
     font-family:var(--body-font);
     font-size:11px;
@@ -381,21 +392,15 @@
 </head>
 <body>
 
-<!-- ===================== META PIXEL BASE CODE ===================== -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'Available Equity Calculator' });
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
+};
+window.relayPixelEvent('AEToolPageView', { content_name: 'AE Tool 01' }, makeEventId());
 </script>
-<!-- ===================== END META PIXEL BASE CODE ===================== -->
-
 <div class="card">
 
   <div class="print-only print-header">
@@ -436,16 +441,26 @@ fbq('track', 'PageView', { content_name: 'Available Equity Calculator' });
         <p class="summary-value headline" id="sumAvailableEquity">$0</p>
       </div>
     </div>
+
+    <div class="summary-required">
+      <p class="summary-label">Total lending required to access this equity
+        <span class="info-bubble" tabindex="0" style="background:#FFFFFF;color:#14305F;">i
+          <span class="tooltip" style="background:#14305F;">Current loan balances plus the available equity above, added together — this is the total loan amount across the portfolio once all available equity has been drawn out.</span>
+        </span>
+      </p>
+      <p class="summary-value" id="sumRequiredLending">$0</p>
+      <p class="summary-note">This is the loan amount the client would need to be assessed as able to afford, subject to a full lending assessment.</p>
+    </div>
   </div>
 
   <button type="button" class="btn-print" id="printBtn">Print / Save as PDF</button>
 
   <p class="small-print">
-    These figures are indicative and provided as general information only — they don't take your full financial situation into account and aren't personal financial advice. Available equity is calculated at 80% of estimated property value, less current loan balances; actual lending decisions depend on the lender's own valuation, servicing assessment and lending policy at the time, and available equity can change as property values and loan balances move.
+    These figures are indicative and provided as general information only — they don't take your full financial situation into account and aren't personal financial advice. Available equity is calculated at 80% of estimated property value, less current loan balances, and the total lending figure shown is simply current lending plus that available equity. Accessing this equity is not guaranteed: it requires a full assessment of affordability and credit history, along with the lender's own valuation, servicing calculations and lending policy at the time, and available equity can change as property values and loan balances move.
   </p>
 
   <div class="print-only print-footer">
-    Loan Theory Pty Ltd. This document is generated for general information purposes only and does not constitute personal financial advice. Figures are estimates based on the information entered and 80% of estimated property value; they do not represent a loan offer or pre-approval. Actual available equity is subject to a lender's valuation, credit assessment and lending criteria at the time of application. Please speak with a Loan Theory credit representative before making any financial decision. Australian Credit Licence details available on request.
+    Loan Theory Pty Ltd. This document is generated for general information purposes only and does not constitute personal financial advice. Figures are estimates based on the information entered and 80% of estimated property value; they do not represent a loan offer or pre-approval. The total lending figure shown is current lending plus the estimated available equity, and does not imply eligibility or approval. Accessing available equity requires a full assessment of affordability and credit history, together with the lender's own valuation, servicing calculations and lending criteria at the time of application. Please speak with a Loan Theory credit representative before making any financial decision. Australian Credit Licence details available on request.
   </div>
 
 </div>
@@ -649,10 +664,12 @@ fbq('track', 'PageView', { content_name: 'Available Equity Calculator' });
   function updateSummary(totalValue, totalDebt){
     var totalEquity = totalValue - totalDebt;
     var totalAvailable = Math.max(0, (totalValue * 0.8) - totalDebt);
+    var totalRequiredLending = totalDebt + totalAvailable;
     document.getElementById('sumPropertyValue').textContent = formatCurrency(totalValue);
     document.getElementById('sumDebt').textContent = formatCurrency(totalDebt);
     document.getElementById('sumEquity').textContent = formatCurrency(totalEquity);
     document.getElementById('sumAvailableEquity').textContent = formatCurrency(totalAvailable);
+    document.getElementById('sumRequiredLending').textContent = formatCurrency(totalRequiredLending);
   }
 
   document.getElementById('addPropertyBtn').addEventListener('click', function(){
@@ -662,22 +679,19 @@ fbq('track', 'PageView', { content_name: 'Available Equity Calculator' });
 
   render();
 
-  /* ===================== META PIXEL: ENGAGEMENT + PRINT ===================== */
-  var CALC_NAME = 'Available Equity Calculator';
+    var CALC_NAME = 'AE Tool 01';
   var hasEngaged = false;
   function trackEngagement(){
     if(hasEngaged) return;
     hasEngaged = true;
-    if(typeof fbq === 'function'){
-      fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
-    }
+    window.relayPixelEvent('AETool01Engaged', { content_name: CALC_NAME }, makeEventId());
   }
+  var hasCompletedRegistration = false;
   window.trackPrint = function(){
-    if(typeof fbq === 'function'){
-      fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
-    }
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
+    window.relayPixelEvent('AEToolPrint', { content_name: CALC_NAME }, makeEventId());
   };
-
   document.getElementById('addPropertyBtn').addEventListener('click', trackEngagement);
 
   document.getElementById('printBtn').addEventListener('click', function(){

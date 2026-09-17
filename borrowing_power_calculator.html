@@ -7,8 +7,11 @@
   :root{
     --orange:#FF8C03;
     --navy:#14305F;
-    --panel-blue: #F3F8FC; /* #DEEBF6 at 35% opacity flattened over white, for consistent rendering regardless of page background */
+    --ledger-bg:#F3F8FC;
     --body-text:#414141;
+    --muted:#7C8CA6;
+    --border:#D5DCE6;
+    --white:#FFFFFF;
   }
 
   @font-face{
@@ -33,10 +36,13 @@
     letter-spacing:0;
     line-height:1.4;
     color: var(--body-text);
-    max-width: 1200px;
+    max-width: 1180px;
     margin:0 auto;
     background:#fff;
     padding: 14px 28px 28px 28px;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 2px 24px rgba(20,48,95,0.08);
   }
 
   .lt-title{
@@ -155,8 +161,8 @@
   }
 
   .lt-panel{
-    background: var(--navy);
-    border-radius: 12px;
+    background: var(--ledger-bg);
+    border-radius: 15px;
     padding: 16px 18px;
   }
 
@@ -167,14 +173,13 @@
     padding: 7px 0;
   }
 
-  .lt-result-label{ color: #C7D4E8; font-size:11px; }
+  .lt-result-label{ color: var(--navy); font-size:12px; }
 
   .lt-result-value{
-    font-family:'Futura Condensed Extra Bold','Arial Narrow',Arial,sans-serif;
-    color: var(--orange);
-    font-weight:800;
-    font-size:19px;
-    letter-spacing:-0.01em;
+    font-family:var(--body-font);
+    color: var(--navy);
+    font-weight:700;
+    font-size:17px;
   }
 
   .lt-hero-result{
@@ -187,7 +192,7 @@
   .lt-hero-label{
     font-family:'Futura Condensed Extra Bold','Arial Narrow',Arial,sans-serif;
     font-weight:800;
-    color:#fff;
+    color:var(--navy);
     font-size:16px;
     text-transform:uppercase;
     letter-spacing:-0.01em;
@@ -196,7 +201,7 @@
   .lt-hero-value{
     font-family:'Futura Condensed Extra Bold','Arial Narrow',Arial,sans-serif;
     font-weight:800;
-    color: var(--orange);
+    color: var(--navy);
     font-size:26px;
     letter-spacing:-0.01em;
   }
@@ -244,7 +249,7 @@
 
   .lt-panel-note{
     font-size:11px;
-    color:#9FB0CC;
+    color:var(--muted);
     margin-top:8px;
     line-height:1.4;
   }
@@ -253,7 +258,7 @@
     .lt-buttons-row{ display:none; }
   }
 
-  @media (max-width: 720px){
+  @media (max-width:600px){
     .lt-fields-grid{ grid-template-columns: 1fr; }
 
     .lt-hero-result{
@@ -303,16 +308,13 @@
   }
 </style>
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1483602183397547');
-fbq('track', 'PageView', { content_name: 'Potential Borrowing Capacity Calculator' });
+function makeEventId(){
+  return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+window.relayPixelEvent = function(eventName, params, eventId){
+  window.parent.postMessage({ type: 'lt_pixel_event', event: eventName, params: params, eventId: eventId }, 'https://www.loantheory.com.au');
+};
+window.relayPixelEvent('BPToolPageView', { content_name: 'BP Tool 01' }, makeEventId());
 </script>
 </head>
 <body>
@@ -484,21 +486,19 @@ fbq('track', 'PageView', { content_name: 'Potential Borrowing Capacity Calculato
 (function(){
 
   // ---------- meta pixel engagement/print tracking ----------
-  var CALC_NAME = 'Potential Borrowing Capacity Calculator';
+  var CALC_NAME = 'BP Tool 01';
   var hasEngaged = false;
   function trackEngagement(){
     if(hasEngaged) return;
     hasEngaged = true;
-    if(typeof fbq === 'function'){
-      fbq('trackCustom', 'CalculatorEngaged', { content_name: CALC_NAME });
-    }
+    window.relayPixelEvent('BPTool01Engaged', { content_name: CALC_NAME }, makeEventId());
   }
+  var hasCompletedRegistration = false;
   window.trackPrint = function(){
-    if(typeof fbq === 'function'){
-      fbq('track', 'CompleteRegistration', { content_name: CALC_NAME });
-    }
+    if(hasCompletedRegistration) return;
+    hasCompletedRegistration = true;
+    window.relayPixelEvent('BPToolPrint', { content_name: CALC_NAME }, makeEventId());
   };
-
   // ---------- helpers ----------
   function parseMoney(str){
     var n = parseFloat(String(str).replace(/,/g,''));
