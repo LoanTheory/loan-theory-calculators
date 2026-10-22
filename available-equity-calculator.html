@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Property and Loan Tree Builder</title>
+<title>Available Equity Calculator</title>
 
 <script>
 function makeEventId(){
@@ -15,7 +15,7 @@ window.relayPixelEvent = function(eventName, params, eventId){
     'https://www.loantheory.com.au'
   );
 };
-window.relayPixelEvent('PTToolPageView', { content_name: 'PT Tool' }, makeEventId());
+window.relayPixelEvent('AEToolPageView', { content_name: 'AE Tool' }, makeEventId());
 </script>
 
 <style>
@@ -325,6 +325,9 @@ select{
 }
 .sb-item{position:relative;}
 .sb-col{display:flex;flex-direction:column;gap:12px;}
+.sb-required{margin-top:12px;}
+.sb-breakdown{margin-top:12px;}
+.sb-breakdown:empty{display:none;}
 .sb-label{
   font-size:11px;
   font-weight:400;
@@ -575,6 +578,7 @@ select{
   margin:14px 0 0;
 }
 .print-footer{display:none;}
+.print-header{display:none;}
 
 /* Responsive */
 @media (max-width:900px){
@@ -606,6 +610,26 @@ select{
   .row-card,.t-unit{break-inside:avoid;}
   .prop-card.collapsed .card-body{display:block !important;}
   .card-toggle .glyph,.card-summary,#maxNote{display:none !important;}
+  .print-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:16px;
+    padding-bottom:10px;
+    margin-bottom:14px;
+    border-bottom:2px solid var(--navy);
+  }
+  .print-logo{height:34px;width:auto;display:block;}
+  .print-wordmark{
+    font-family:var(--heading-font);
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:-0.01em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  .print-meta{text-align:right;font-size:11px;color:var(--muted);line-height:1.4;}
+  .print-meta b{display:block;font-size:13px;color:var(--navy);font-weight:600;}
   .print-footer{
     display:block;
     margin-top:16px;
@@ -622,6 +646,11 @@ select{
 <body>
 
 <div class="calc-container" id="calc">
+
+  <div class="print-header" aria-hidden="true">
+    <img class="print-logo" alt="Loan Theory" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB6b29tQW5kUGFuPSJtYWduaWZ5IiB2aWV3Qm94PSIxNSAyOTAgMTQxNiAyMjgiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiIHZlcnNpb249IjEuMCI+PGRlZnM+PGcvPjxjbGlwUGF0aCBpZD0iYjZkY2I0NmI4NiI+PHBhdGggZD0iTSAwLjM1OTM3NSAwLjgzOTg0NCBMIDE0MTQuOTIxODc1IDAuODM5ODQ0IEwgMTQxNC45MjE4NzUgMzQ2LjE5OTIxOSBMIDAuMzU5Mzc1IDM0Ni4xOTkyMTkgWiBNIDAuMzU5Mzc1IDAuODM5ODQ0ICIgY2xpcC1ydWxlPSJub256ZXJvIi8+PC9jbGlwUGF0aD48Y2xpcFBhdGggaWQ9ImRmNjk3YmExYzkiPjxyZWN0IHg9IjAiIHdpZHRoPSIxNDE1IiB5PSIwIiBoZWlnaHQ9IjM0NyIvPjwvY2xpcFBhdGg+PGNsaXBQYXRoIGlkPSJjYTEzZTI1NWMzIj48cmVjdCB4PSIwIiB3aWR0aD0iMTQxNSIgeT0iMCIgaGVpZ2h0PSIzNDciLz48L2NsaXBQYXRoPjwvZGVmcz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLCAwLCAwLCAxLCA5LCAyMzEpIj48ZyBjbGlwLXBhdGg9InVybCgjY2ExM2UyNTVjMykiPjxnIGNsaXAtcGF0aD0idXJsKCNiNmRjYjQ2Yjg2KSI+PGcgdHJhbnNmb3JtPSJtYXRyaXgoMSwgMCwgMCwgMSwgMC4wMDAwMDAwMDAwMDAwMDE3NzYsIDAuMDAwMDAwMDAwMDAwMDI4NDIyKSI+PGcgY2xpcC1wYXRoPSJ1cmwoI2RmNjk3YmExYzkpIj48ZyBmaWxsPSIjZmY4YzAzIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuNDMyMzAxLCAyNzcuNTQzMzIzKSI+PGc+PHBhdGggZD0iTSAxMTUuNTE1NjI1IDAgTCAxNi42MjUgMCBMIDE2LjYyNSAtMjA4Ljg1OTM3NSBMIDczLjEyNSAtMjA4Ljg1OTM3NSBMIDczLjEyNSAtNDkuMzEyNSBMIDExNS41MTU2MjUgLTQ5LjMxMjUgWiBNIDExNS41MTU2MjUgMCAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmY4YzAzIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkwLjQ1ODA1MSwgMjc3LjU0MzMyMykiPjxnPjxwYXRoIGQ9Ik0gMTAuMjUgLTEwNC40MjE4NzUgQyAxMC4yNSAtMTE3LjE3MTg3NSAxMS43MjI2NTYgLTEyOS45MTQwNjIgMTQuNjcxODc1IC0xNDIuNjU2MjUgQyAxNy42Mjg5MDYgLTE1NS4zOTQ1MzEgMjIuMjg5MDYyIC0xNjcuMDIzNDM4IDI4LjY1NjI1IC0xNzcuNTQ2ODc1IEMgMzUuMDMxMjUgLTE4OC4wNzgxMjUgNDMuMjUgLTE5Ni41MjM0MzggNTMuMzEyNSAtMjAyLjg5MDYyNSBDIDYzLjM4MjgxMiAtMjA5LjI2NTYyNSA3NS42MjUgLTIxMi40NTMxMjUgOTAuMDMxMjUgLTIxMi40NTMxMjUgQyAxMDQuNDI1NzgxIC0yMTIuNDUzMTI1IDExNi42NTYyNSAtMjA5LjI2NTYyNSAxMjYuNzE4NzUgLTIwMi44OTA2MjUgQyAxMzYuNzg5MDYyIC0xOTYuNTIzNDM4IDE0NS4wMDc4MTIgLTE4OC4wNzgxMjUgMTUxLjM3NSAtMTc3LjU0Njg3NSBDIDE1Ny43NSAtMTY3LjAyMzQzOCAxNjIuNDEwMTU2IC0xNTUuMzk0NTMxIDE2NS4zNTkzNzUgLTE0Mi42NTYyNSBDIDE2OC4zMTY0MDYgLTEyOS45MTQwNjIgMTY5Ljc5Njg3NSAtMTE3LjE3MTg3NSAxNjkuNzk2ODc1IC0xMDQuNDIxODc1IEMgMTY5Ljc5Njg3NSAtOTEuNjc5Njg4IDE2OC4zMTY0MDYgLTc4Ljk0MTQwNiAxNjUuMzU5Mzc1IC02Ni4yMDMxMjUgQyAxNjIuNDEwMTU2IC01My40NjA5MzggMTU3Ljc1IC00MS44MjgxMjUgMTUxLjM3NSAtMzEuMjk2ODc1IEMgMTQ1LjAwNzgxMiAtMjAuNzczNDM4IDEzNi43ODkwNjIgLTEyLjMyODEyNSAxMjYuNzE4NzUgLTUuOTUzMTI1IEMgMTE2LjY1NjI1IDAuNDEwMTU2IDEwNC40MjU3ODEgMy41OTM3NSA5MC4wMzEyNSAzLjU5Mzc1IEMgNzUuNjI1IDMuNTkzNzUgNjMuMzgyODEyIDAuNDEwMTU2IDUzLjMxMjUgLTUuOTUzMTI1IEMgNDMuMjUgLTEyLjMyODEyNSAzNS4wMzEyNSAtMjAuNzczNDM4IDI4LjY1NjI1IC0zMS4yOTY4NzUgQyAyMi4yODkwNjIgLTQxLjgyODEyNSAxNy42Mjg5MDYgLTUzLjQ2MDkzOCAxNC42NzE4NzUgLTY2LjIwMzEyNSBDIDExLjcyMjY1NiAtNzguOTQxNDA2IDEwLjI1IC05MS42Nzk2ODggMTAuMjUgLTEwNC40MjE4NzUgWiBNIDY3Ljg1OTM3NSAtMTA0LjQyMTg3NSBDIDY3Ljg1OTM3NSAtMTAxLjA5NzY1NiA2OC4wMzkwNjIgLTk2LjQzNzUgNjguNDA2MjUgLTkwLjQzNzUgQyA2OC43ODEyNSAtODQuNDM3NSA2OS42NjAxNTYgLTc4LjI1IDcxLjA0Njg3NSAtNzEuODc1IEMgNzIuNDI5Njg4IC02NS41MDc4MTIgNzQuNTk3NjU2IC02MC4xMDkzNzUgNzcuNTQ2ODc1IC01NS42NzE4NzUgQyA4MC41MDM5MDYgLTUxLjI0MjE4OCA4NC42NjQwNjIgLTQ5LjAzMTI1IDkwLjAzMTI1IC00OS4wMzEyNSBDIDk1LjM4MjgxMiAtNDkuMDMxMjUgOTkuNTM1MTU2IC01MS4yNDIxODggMTAyLjQ4NDM3NSAtNTUuNjcxODc1IEMgMTA1LjQ0MTQwNiAtNjAuMTA5Mzc1IDEwNy42MTMyODEgLTY1LjUwNzgxMiAxMDkgLTcxLjg3NSBDIDExMC4zODI4MTIgLTc4LjI1IDExMS4yNTc4MTIgLTg0LjQzNzUgMTExLjYyNSAtOTAuNDM3NSBDIDExMiAtOTYuNDM3NSAxMTIuMTg3NSAtMTAxLjA5NzY1NiAxMTIuMTg3NSAtMTA0LjQyMTg3NSBDIDExMi4xODc1IC0xMDcuNzUzOTA2IDExMiAtMTEyLjQyMTg3NSAxMTEuNjI1IC0xMTguNDIxODc1IEMgMTExLjI1NzgxMiAtMTI0LjQyMTg3NSAxMTAuMzgyODEyIC0xMzAuNjAxNTYyIDEwOSAtMTM2Ljk2ODc1IEMgMTA3LjYxMzI4MSAtMTQzLjM0Mzc1IDEwNS40NDE0MDYgLTE0OC43NDIxODggMTAyLjQ4NDM3NSAtMTUzLjE3MTg3NSBDIDk5LjUzNTE1NiAtMTU3LjYwOTM3NSA5NS4zODI4MTIgLTE1OS44MjgxMjUgOTAuMDMxMjUgLTE1OS44MjgxMjUgQyA4NC42NjQwNjIgLTE1OS44MjgxMjUgODAuNTAzOTA2IC0xNTcuNjA5Mzc1IDc3LjU0Njg3NSAtMTUzLjE3MTg3NSBDIDc0LjU5NzY1NiAtMTQ4Ljc0MjE4OCA3Mi40Mjk2ODggLTE0My4zNDM3NSA3MS4wNDY4NzUgLTEzNi45Njg3NSBDIDY5LjY2MDE1NiAtMTMwLjYwMTU2MiA2OC43ODEyNSAtMTI0LjQyMTg3NSA2OC40MDYyNSAtMTE4LjQyMTg3NSBDIDY4LjAzOTA2MiAtMTEyLjQyMTg3NSA2Ny44NTkzNzUgLTEwNy43NTM5MDYgNjcuODU5Mzc1IC0xMDQuNDIxODc1IFogTSA2Ny44NTkzNzUgLTEwNC40MjE4NzUgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmOGMwMyIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMzguOTMxMjY4LCAyNzcuNTQzMzIzKSI+PGc+PHBhdGggZD0iTSAxNjUuNjQwNjI1IDAgTCAxMDcuMjAzMTI1IDAgTCAxMDMuMDQ2ODc1IC0yNi44NzUgTCA2NS4wOTM3NSAtMjYuODc1IEwgNjAuMzkwNjI1IDAgTCAyLjIxODc1IDAgTCA1Mi4zNTkzNzUgLTIwOC44NTkzNzUgTCAxMjEuMzI4MTI1IC0yMDguODU5Mzc1IFogTSA3Mi41NzgxMjUgLTcxLjE4NzUgTCA5Ni4zOTA2MjUgLTcxLjE4NzUgTCA5MC4yOTY4NzUgLTExOS42NTYyNSBDIDg5LjU1NDY4OCAtMTI2LjEyNSA4OC44NjMyODEgLTEzMi42Nzk2ODggODguMjE4NzUgLTEzOS4zMjgxMjUgQyA4Ny41NzAzMTIgLTE0NS45NzI2NTYgODYuODc4OTA2IC0xNTIuNTMxMjUgODYuMTQwNjI1IC0xNTkgTCA4NS41OTM3NSAtMTU5IEMgODQuODUxNTYyIC0xNTIuNTMxMjUgODQuMDY2NDA2IC0xNDUuOTcyNjU2IDgzLjIzNDM3NSAtMTM5LjMyODEyNSBDIDgyLjM5ODQzOCAtMTMyLjY3OTY4OCA4MS40Mjk2ODggLTEyNi4xMjUgODAuMzI4MTI1IC0xMTkuNjU2MjUgWiBNIDcyLjU3ODEyNSAtNzEuMTg3NSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmY4YzAzIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM3NC42NjI0MTMsIDI3Ny41NDMzMjMpIj48Zz48cGF0aCBkPSJNIDE2LjYyNSAwIEwgMTYuNjI1IC0yMDguODU5Mzc1IEwgNzAuMzU5Mzc1IC0yMDguODU5Mzc1IEwgMTE1LjUxNTYyNSAtODMuMDkzNzUgTCAxMTYuMDYyNSAtODMuNjU2MjUgQyAxMTQuOTU3MDMxIC05NS42NTYyNSAxMTMuNjE3MTg4IC0xMDcuNjU2MjUgMTEyLjA0Njg3NSAtMTE5LjY1NjI1IEMgMTEwLjQ3MjY1NiAtMTMxLjY2NDA2MiAxMDkuNjg3NSAtMTQzLjY3MTg3NSAxMDkuNjg3NSAtMTU1LjY3MTg3NSBMIDEwOS42ODc1IC0yMDguODU5Mzc1IEwgMTYzLjk4NDM3NSAtMjA4Ljg1OTM3NSBMIDE2My45ODQzNzUgMCBMIDEwOS42ODc1IDAgTCA2Ny41OTM3NSAtMTIwLjUgTCA2Ny4wMzEyNSAtMTE5LjkzNzUgQyA2Ny43Njk1MzEgLTExMC4xNTYyNSA2OC41OTc2NTYgLTEwMC4zNjcxODggNjkuNTE1NjI1IC05MC41NzgxMjUgQyA3MC40NDE0MDYgLTgwLjc4NTE1NiA3MC45MDYyNSAtNzEgNzAuOTA2MjUgLTYxLjIxODc1IEwgNzAuOTA2MjUgMCBaIE0gMTYuNjI1IDAgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmOGMwMyIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1MjMuNDEyNjU5LCAyNzcuNTQzMzIzKSI+PGcvPjwvZz48L2c+PGcgZmlsbD0iI2ZmOGMwMyIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1NzUuMjEyMDY4LCAyNzcuNTQzMzIzKSI+PGc+PHBhdGggZD0iTSA5My45MDYyNSAwIEwgMzcuMzkwNjI1IDAgTCAzNy4zOTA2MjUgLTE1Ny44OTA2MjUgTCA2LjM3NSAtMTU3Ljg5MDYyNSBMIDYuMzc1IC0yMDguODU5Mzc1IEwgMTI2LjMxMjUgLTIwOC44NTkzNzUgTCAxMjYuMzEyNSAtMTU3Ljg5MDYyNSBMIDkzLjkwNjI1IC0xNTcuODkwNjI1IFogTSA5My45MDYyNSAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZjhjMDMiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjc1Ljc2MzkwOCwgMjc3LjU0MzMyMykiPjxnPjxwYXRoIGQ9Ik0gMTU2LjUgMCBMIDEwMCAwIEwgMTAwIC04NC43NjU2MjUgTCA3My4xMjUgLTg0Ljc2NTYyNSBMIDczLjEyNSAwIEwgMTYuNjI1IDAgTCAxNi42MjUgLTIwOC44NTkzNzUgTCA3My4xMjUgLTIwOC44NTkzNzUgTCA3My4xMjUgLTEzNC4wNjI1IEwgMTAwIC0xMzQuMDYyNSBMIDEwMCAtMjA4Ljg1OTM3NSBMIDE1Ni41IC0yMDguODU5Mzc1IFogTSAxNTYuNSAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZjhjMDMiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoODE3LjMxMjExNiwgMjc3LjU0MzMyMykiPjxnPjxwYXRoIGQ9Ik0gMTYuNjI1IDAgTCAxNi42MjUgLTIwOC44NTkzNzUgTCAxMjEuNjA5Mzc1IC0yMDguODU5Mzc1IEwgMTIxLjYwOTM3NSAtMTU5LjU0Njg3NSBMIDczLjEyNSAtMTU5LjU0Njg3NSBMIDczLjEyNSAtMTMwLjQ2ODc1IEwgMTE2LjYwOTM3NSAtMTMwLjQ2ODc1IEwgMTE2LjYwOTM3NSAtODEuMTU2MjUgTCA3My4xMjUgLTgxLjE1NjI1IEwgNzMuMTI1IC00OS4zMTI1IEwgMTIxLjYwOTM3NSAtNDkuMzEyNSBMIDEyMS42MDkzNzUgMCBaIE0gMTYuNjI1IDAgIi8+PC9nPjwvZz48L2c+PGcgZmlsbD0iI2ZmOGMwMyIgZmlsbC1vcGFjaXR5PSIxIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5MjMuNjgwOTcyLCAyNzcuNTQzMzIzKSI+PGc+PHBhdGggZD0iTSAxMC4yNSAtMTA0LjQyMTg3NSBDIDEwLjI1IC0xMTcuMTcxODc1IDExLjcyMjY1NiAtMTI5LjkxNDA2MiAxNC42NzE4NzUgLTE0Mi42NTYyNSBDIDE3LjYyODkwNiAtMTU1LjM5NDUzMSAyMi4yODkwNjIgLTE2Ny4wMjM0MzggMjguNjU2MjUgLTE3Ny41NDY4NzUgQyAzNS4wMzEyNSAtMTg4LjA3ODEyNSA0My4yNSAtMTk2LjUyMzQzOCA1My4zMTI1IC0yMDIuODkwNjI1IEMgNjMuMzgyODEyIC0yMDkuMjY1NjI1IDc1LjYyNSAtMjEyLjQ1MzEyNSA5MC4wMzEyNSAtMjEyLjQ1MzEyNSBDIDEwNC40MjU3ODEgLTIxMi40NTMxMjUgMTE2LjY1NjI1IC0yMDkuMjY1NjI1IDEyNi43MTg3NSAtMjAyLjg5MDYyNSBDIDEzNi43ODkwNjIgLTE5Ni41MjM0MzggMTQ1LjAwNzgxMiAtMTg4LjA3ODEyNSAxNTEuMzc1IC0xNzcuNTQ2ODc1IEMgMTU3Ljc1IC0xNjcuMDIzNDM4IDE2Mi40MTAxNTYgLTE1NS4zOTQ1MzEgMTY1LjM1OTM3NSAtMTQyLjY1NjI1IEMgMTY4LjMxNjQwNiAtMTI5LjkxNDA2MiAxNjkuNzk2ODc1IC0xMTcuMTcxODc1IDE2OS43OTY4NzUgLTEwNC40MjE4NzUgQyAxNjkuNzk2ODc1IC05MS42Nzk2ODggMTY4LjMxNjQwNiAtNzguOTQxNDA2IDE2NS4zNTkzNzUgLTY2LjIwMzEyNSBDIDE2Mi40MTAxNTYgLTUzLjQ2MDkzOCAxNTcuNzUgLTQxLjgyODEyNSAxNTEuMzc1IC0zMS4yOTY4NzUgQyAxNDUuMDA3ODEyIC0yMC43NzM0MzggMTM2Ljc4OTA2MiAtMTIuMzI4MTI1IDEyNi43MTg3NSAtNS45NTMxMjUgQyAxMTYuNjU2MjUgMC40MTAxNTYgMTA0LjQyNTc4MSAzLjU5Mzc1IDkwLjAzMTI1IDMuNTkzNzUgQyA3NS42MjUgMy41OTM3NSA2My4zODI4MTIgMC40MTAxNTYgNTMuMzEyNSAtNS45NTMxMjUgQyA0My4yNSAtMTIuMzI4MTI1IDM1LjAzMTI1IC0yMC43NzM0MzggMjguNjU2MjUgLTMxLjI5Njg3NSBDIDIyLjI4OTA2MiAtNDEuODI4MTI1IDE3LjYyODkwNiAtNTMuNDYwOTM4IDE0LjY3MTg3NSAtNjYuMjAzMTI1IEMgMTEuNzIyNjU2IC03OC45NDE0MDYgMTAuMjUgLTkxLjY3OTY4OCAxMC4yNSAtMTA0LjQyMTg3NSBaIE0gNjcuODU5Mzc1IC0xMDQuNDIxODc1IEMgNjcuODU5Mzc1IC0xMDEuMDk3NjU2IDY4LjAzOTA2MiAtOTYuNDM3NSA2OC40MDYyNSAtOTAuNDM3NSBDIDY4Ljc4MTI1IC04NC40Mzc1IDY5LjY2MDE1NiAtNzguMjUgNzEuMDQ2ODc1IC03MS44NzUgQyA3Mi40Mjk2ODggLTY1LjUwNzgxMiA3NC41OTc2NTYgLTYwLjEwOTM3NSA3Ny41NDY4NzUgLTU1LjY3MTg3NSBDIDgwLjUwMzkwNiAtNTEuMjQyMTg4IDg0LjY2NDA2MiAtNDkuMDMxMjUgOTAuMDMxMjUgLTQ5LjAzMTI1IEMgOTUuMzgyODEyIC00OS4wMzEyNSA5OS41MzUxNTYgLTUxLjI0MjE4OCAxMDIuNDg0Mzc1IC01NS42NzE4NzUgQyAxMDUuNDQxNDA2IC02MC4xMDkzNzUgMTA3LjYxMzI4MSAtNjUuNTA3ODEyIDEwOSAtNzEuODc1IEMgMTEwLjM4MjgxMiAtNzguMjUgMTExLjI1NzgxMiAtODQuNDM3NSAxMTEuNjI1IC05MC40Mzc1IEMgMTEyIC05Ni40Mzc1IDExMi4xODc1IC0xMDEuMDk3NjU2IDExMi4xODc1IC0xMDQuNDIxODc1IEMgMTEyLjE4NzUgLTEwNy43NTM5MDYgMTEyIC0xMTIuNDIxODc1IDExMS42MjUgLTExOC40MjE4NzUgQyAxMTEuMjU3ODEyIC0xMjQuNDIxODc1IDExMC4zODI4MTIgLTEzMC42MDE1NjIgMTA5IC0xMzYuOTY4NzUgQyAxMDcuNjEzMjgxIC0xNDMuMzQzNzUgMTA1LjQ0MTQwNiAtMTQ4Ljc0MjE4OCAxMDIuNDg0Mzc1IC0xNTMuMTcxODc1IEMgOTkuNTM1MTU2IC0xNTcuNjA5Mzc1IDk1LjM4MjgxMiAtMTU5LjgyODEyNSA5MC4wMzEyNSAtMTU5LjgyODEyNSBDIDg0LjY2NDA2MiAtMTU5LjgyODEyNSA4MC41MDM5MDYgLTE1Ny42MDkzNzUgNzcuNTQ2ODc1IC0xNTMuMTcxODc1IEMgNzQuNTk3NjU2IC0xNDguNzQyMTg4IDcyLjQyOTY4OCAtMTQzLjM0Mzc1IDcxLjA0Njg3NSAtMTM2Ljk2ODc1IEMgNjkuNjYwMTU2IC0xMzAuNjAxNTYyIDY4Ljc4MTI1IC0xMjQuNDIxODc1IDY4LjQwNjI1IC0xMTguNDIxODc1IEMgNjguMDM5MDYyIC0xMTIuNDIxODc1IDY3Ljg1OTM3NSAtMTA3Ljc1MzkwNiA2Ny44NTkzNzUgLTEwNC40MjE4NzUgWiBNIDY3Ljg1OTM3NSAtMTA0LjQyMTg3NSAiLz48L2c+PC9nPjwvZz48ZyBmaWxsPSIjZmY4YzAzIiBmaWxsLW9wYWNpdHk9IjEiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEwNzIuMTU0MTI0LCAyNzcuNTQzMzIzKSI+PGc+PHBhdGggZD0iTSAxNjUuMzc1IDAgTCAxMDQuMTU2MjUgMCBMIDcyLjg0Mzc1IC04Ni45ODQzNzUgTCA3Mi4yOTY4NzUgLTg2LjQyMTg3NSBDIDcyLjQ4NDM3NSAtODEuMjUzOTA2IDcyLjY2NDA2MiAtNzYuMTI4OTA2IDcyLjg0Mzc1IC03MS4wNDY4NzUgQyA3My4wMzEyNSAtNjUuOTcyNjU2IDczLjEyNSAtNjAuODQ3NjU2IDczLjEyNSAtNTUuNjcxODc1IEwgNzMuMTI1IDAgTCAxNi42MjUgMCBMIDE2LjYyNSAtMjA4Ljg1OTM3NSBMIDcxLjE4NzUgLTIwOC44NTkzNzUgQyA4Ny42MjUgLTIwOC44NTkzNzUgMTAyLjE2NDA2MiAtMjA2Ljg3NSAxMTQuODEyNSAtMjAyLjkwNjI1IEMgMTI3LjQ2ODc1IC0xOTguOTM3NSAxMzcuNDQxNDA2IC0xOTEuOTYwOTM4IDE0NC43MzQzNzUgLTE4MS45ODQzNzUgQyAxNTIuMDIzNDM4IC0xNzIuMDE1NjI1IDE1NS42NzE4NzUgLTE1Ny43OTY4NzUgMTU1LjY3MTg3NSAtMTM5LjMyODEyNSBDIDE1NS42NzE4NzUgLTEyNy44Nzg5MDYgMTUzLjA4MjAzMSAtMTE3LjM5ODQzOCAxNDcuOTA2MjUgLTEwNy44OTA2MjUgQyAxNDIuNzM4MjgxIC05OC4zNzg5MDYgMTM0LjUyMzQzOCAtOTEuNDEwMTU2IDEyMy4yNjU2MjUgLTg2Ljk4NDM3NSBaIE0gNzMuMTI1IC0xMTIuNDY4NzUgTCA3Ni43MzQzNzUgLTExMi4xODc1IEMgODQuMzA0Njg4IC0xMTIuMTg3NSA5MC4wMzEyNSAtMTE0LjkxMDE1NiA5My45MDYyNSAtMTIwLjM1OTM3NSBDIDk3Ljc4MTI1IC0xMjUuODA0Njg4IDk5LjcxODc1IC0xMzEuOTQ1MzEyIDk5LjcxODc1IC0xMzguNzgxMjUgQyA5OS43MTg3NSAtMTQ4LjAwNzgxMiA5Ny4yMjI2NTYgLTE1NC42MDkzNzUgOTIuMjM0Mzc1IC0xNTguNTc4MTI1IEMgODcuMjUzOTA2IC0xNjIuNTQ2ODc1IDgwLjg4MjgxMiAtMTY0LjM0NzY1NiA3My4xMjUgLTE2My45ODQzNzUgWiBNIDczLjEyNSAtMTEyLjQ2ODc1ICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZjhjMDMiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTIwNy42MDgyNTYsIDI3Ny41NDMzMjMpIj48Zz48cGF0aCBkPSJNIDExMC4yNSAwIEwgNTMuNzM0Mzc1IDAgTCA1My43MzQzNzUgLTg4LjY0MDYyNSBMIDIuMjE4NzUgLTIwOC44NTkzNzUgTCA2MC45Mzc1IC0yMDguODU5Mzc1IEwgODAuMzI4MTI1IC0xNDQuMzEyNSBMIDgwLjg5MDYyNSAtMTQ0LjMxMjUgTCAxMDAuNTQ2ODc1IC0yMDguODU5Mzc1IEwgMTU5IC0yMDguODU5Mzc1IEwgMTEwLjI1IC04OC42NDA2MjUgWiBNIDExMC4yNSAwICIvPjwvZz48L2c+PC9nPjxnIGZpbGw9IiNmZjhjMDMiIGZpbGwtb3BhY2l0eT0iMSI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTMzNi42OTEzNzQsIDI3Ny41NDMzMjMpIj48Zz48cGF0aCBkPSJNIDQxLjgyODEyNSAzLjA0Njg3NSBDIDMyLjk2MDkzOCAzLjA0Njg3NSAyNS40ODQzNzUgLTAuMDg1OTM3NSAxOS4zOTA2MjUgLTYuMzU5Mzc1IEMgMTMuMjk2ODc1IC0xMi42NDA2MjUgMTAuMjUgLTIwLjIxMDkzOCAxMC4yNSAtMjkuMDc4MTI1IEMgMTAuMjUgLTM0LjgwNDY4OCAxMS42MzI4MTIgLTQwLjAyMzQzOCAxNC40MDYyNSAtNDQuNzM0Mzc1IEMgMTcuMTc1NzgxIC00OS40NDE0MDYgMjAuOTE0MDYyIC01My4yMjY1NjIgMjUuNjI1IC01Ni4wOTM3NSBDIDMwLjMzMjAzMSAtNTguOTU3MDMxIDM1LjM2MzI4MSAtNjAuMzkwNjI1IDQwLjcxODc1IC02MC4zOTA2MjUgQyA0OS43Njk1MzEgLTYwLjM5MDYyNSA1Ny41MjM0MzggLTU3LjM0Mzc1IDYzLjk4NDM3NSAtNTEuMjUgQyA3MC40NTMxMjUgLTQ1LjE1NjI1IDczLjY4NzUgLTM3LjQ4ODI4MSA3My42ODc1IC0yOC4yNSBDIDczLjY4NzUgLTIyLjUzMTI1IDcyLjI1MzkwNiAtMTcuMjY5NTMxIDY5LjM5MDYyNSAtMTIuNDY4NzUgQyA2Ni41MjM0MzggLTcuNjY0MDYyIDYyLjY5MTQwNiAtMy44Nzg5MDYgNTcuODkwNjI1IC0xLjEwOTM3NSBDIDUzLjA4NTkzOCAxLjY2MDE1NiA0Ny43MzQzNzUgMy4wNDY4NzUgNDEuODI4MTI1IDMuMDQ2ODc1IFogTSA0MS44MjgxMjUgMy4wNDY4NzUgIi8+PC9nPjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvZz48L3N2Zz4=">
+    <div class="print-meta"><b>Available Equity Calculator</b>Prepared <span id="printDate"></span></div>
+  </div>
 
   <button type="button" class="open-link" data-file="open">Already saved your details? Open your file</button>
   <div id="fileStatusTop"></div>
@@ -676,12 +705,17 @@ select{
         </div>
       </div>
     </div>
+    <div class="sb-item sb-required">
+      <p class="sb-label">Total lending required to access this equity<span class="info on-dark" tabindex="0">i<span class="tip">Your total lending now, plus your total equity up to 80%. This is the total borrowing once all of that equity has been accessed.</span></span></p>
+      <p class="sb-value" id="tRequired">$0</p>
+    </div>
+    <div class="sb-grid sb-breakdown" id="breakdown"></div>
   </div>
 
 
   <div id="notes"></div>
 
-  <div class="banner banner-neutral">Equity is worked out against the property, or property pool, that each loan is secured by. Using it for another purchase is subject to a full lending assessment, including showing you can afford the total lending.</div>
+  <div class="banner banner-neutral">Total lending required is the loan amount you'd need to show you can afford to access this equity. Equity is worked out against the property, or property pool, each loan is secured by, and using it is subject to a full lending assessment.</div>
 
   <div class="file-row">
     <button type="button" class="btn-secondary" data-file="save">Save my details</button>
@@ -693,25 +727,25 @@ select{
 
   <button type="button" class="btn-print" onclick="trackPrint();window.print()">Print / Save as PDF</button>
 
-  <p class="disclaimer">These figures are indicative and general information only. They don't take your full financial situation into account and aren't personal financial advice. Equity up to 80% is 80% of the estimated value of each standalone property or property pool, less the loans secured against it. Loan purpose labels are for your own reference and don't determine tax treatment, so speak with your accountant about how your loans should be structured. Accessing equity is not guaranteed. It requires a full assessment of affordability and credit history, plus the lender's valuation, servicing calculations and lending policy at the time.</p>
+  <p class="disclaimer">These figures are indicative and general information only. They don't take your full financial situation into account and aren't personal financial advice. Equity up to 80% is 80% of the estimated value of each standalone property or property pool, less the loans secured against it, and total lending required is current lending plus that equity. Loan purpose labels are for your own reference and don't determine tax treatment, so speak with your accountant about how your loans should be structured. Accessing equity is not guaranteed. It requires a full assessment of affordability and credit history, plus the lender's valuation, servicing calculations and lending policy at the time.</p>
 
-  <div class="print-footer">Loan Theory is a trading name of The Theory Group Pty Ltd, a Credit Representative of Connective Credit Services Pty Ltd. This document is general information only and is not personal financial, tax or legal advice, a loan offer, an approval or a pre-approval. Figures are estimates based on the information entered and 80% of estimated property value. Ownership, loan purpose and deposit links are shown as entered and have not been verified. Accessing equity requires a full assessment of affordability and credit history, together with the lender's valuation, servicing calculations and lending criteria at the time of application. Speak with a Loan Theory credit representative before making any financial decision, and with your accountant about tax and ownership structures.</div>
+  <div class="print-footer">Loan Theory is a trading name of The Theory Group Pty Ltd, a Credit Representative of Connective Credit Services Pty Ltd. This document is general information only and is not personal financial, tax or legal advice, a loan offer, an approval or a pre-approval. Figures are estimates based on the information entered and 80% of estimated property value, worked out across the properties in each property pool together where they are cross securitised. Total lending required is current lending plus estimated equity up to 80% and does not imply eligibility. Ownership, loan purpose and deposit links are shown as entered and have not been verified. Accessing equity requires a full assessment of affordability and credit history, together with the lender's valuation, servicing calculations and lending criteria at the time of application. Speak with a Loan Theory credit representative before making any financial decision, and with your accountant about tax and ownership structures.</div>
 
 </div>
 
 <script>
-var CALC_NAME = 'PT Tool';
+var CALC_NAME = 'AE Tool';
 var hasEngaged = false;
 function trackEngagement(){
   if(hasEngaged) return;
   hasEngaged = true;
-  window.relayPixelEvent('PTToolEngaged', { content_name: CALC_NAME }, makeEventId());
+  window.relayPixelEvent('AEToolEngaged', { content_name: CALC_NAME }, makeEventId());
 }
 var hasPrinted = false;
 window.trackPrint = function(){
   if(hasPrinted) return;
   hasPrinted = true;
-  window.relayPixelEvent('PTToolPrint', { content_name: CALC_NAME }, makeEventId());
+  window.relayPixelEvent('AEToolPrint', { content_name: CALC_NAME }, makeEventId());
 };
 
 /* ---------- State ----------
@@ -803,6 +837,15 @@ function findOwner(oid){
   }
   return null;
 }
+/* Equal shares that always total exactly 100%, e.g. 33.33 / 33.33 / 33.34 */
+function splitEvenly(p){
+  var n = p.owners.length;
+  var base = Math.floor(10000 / n) / 100;
+  p.owners.forEach(function(o, i){
+    var v = i === n - 1 ? Math.round((100 - base * (n - 1)) * 100) / 100 : base;
+    o.share = String(v);
+  });
+}
 function ownerShare(p){
   var s = 0;
   p.owners.forEach(function(o){ s += pct(o.share); });
@@ -845,6 +888,7 @@ function totals(){
     t.repay += monthlyRepay(l);
   });
   t.lvr = t.value > 0 ? t.debt / t.value * 100 : 0;
+  t.required = t.debt + t.available;
   return t;
 }
 function incomingLinks(p){
@@ -852,10 +896,63 @@ function incomingLinks(p){
   allLoans(function(l, j, src){ if(depTarget(l) === p.id) out.push({ prop: src, loan: l, index: j }); });
   return out;
 }
+/* Pools appear as they can be filled: pool 2 shows once pool 1 is in use and
+   there are enough properties for it (a pool needs two). */
 function poolOptionCount(){
-  var n = Math.max(1, Math.floor(props.length / 2));
-  props.forEach(function(p){ if(p.pool > n) n = p.pool; });
-  return n;
+  var maxUsed = 0;
+  props.forEach(function(p){ if(p.pool > maxUsed) maxUsed = p.pool; });
+  return Math.max(1, Math.min(Math.floor(props.length / 2), maxUsed + 1), maxUsed);
+}
+/* Keep pool numbers tight (1, 2, 3 ...) when a pool empties */
+function normalizePools(){
+  var used = [];
+  props.forEach(function(p){ if(p.pool && used.indexOf(p.pool) < 0) used.push(p.pool); });
+  used.sort(function(a, b){ return a - b; });
+  props.forEach(function(p){ if(p.pool) p.pool = used.indexOf(p.pool) + 1; });
+}
+/* The security a property sits in: its pool, or itself when standalone */
+function unitKey(p){ return p.pool ? 'pool' + p.pool : p.id; }
+/* True if security unit `from` already funds unit `to`, directly or through a chain of deposits */
+function reachesUnit(from, to, seen){
+  seen = seen || {};
+  if(seen[from]) return false;
+  seen[from] = true;
+  var hit = false;
+  props.forEach(function(p){
+    if(hit || unitKey(p) !== from) return;
+    p.loans.forEach(function(l){
+      if(hit) return;
+      var t = findProp(depTarget(l));
+      if(!t) return;
+      var k = unitKey(t);
+      if(k === from) return;
+      if(k === to || reachesUnit(k, to, seen)) hit = true;
+    });
+  });
+  return hit;
+}
+/* Drop deposit links that point nowhere or would make a loop between securities */
+function sanitizeLinks(){
+  var edges = {};
+  function reach(a, b, seen){
+    if(a === b) return true;
+    seen = seen || {};
+    if(seen[a]) return false;
+    seen[a] = true;
+    var out = edges[a] || [];
+    for(var i = 0; i < out.length; i++){ if(reach(out[i], b, seen)) return true; }
+    return false;
+  }
+  allLoans(function(l, j, p){
+    var id = depTarget(l);
+    if(!id) return;
+    var t = findProp(id);
+    if(!t || t.id === p.id){ l.usedFor = ''; return; }
+    var a = unitKey(p), b = unitKey(t);
+    if(a === b) return;
+    if(reach(b, a)){ l.usedFor = ''; return; }
+    (edges[a] = edges[a] || []).push(b);
+  });
 }
 
 /* ---------- Render: input cards ---------- */
@@ -891,8 +988,12 @@ function freqSelect(l){
 function usedForSelect(l, p){
   var h = '<select id="ld-' + l.id + '" data-kind="usedfor" data-ref="' + l.id + '">' +
     '<option value="">Not specified</option>';
+  var here = unitKey(p), current = depTarget(l);
   props.forEach(function(q){
     if(q.id === p.id) return;
+    /* hide properties that already fund this one, so links can't loop */
+    var there = unitKey(q);
+    if(q.id !== current && there !== here && reachesUnit(there, here)) return;
     var v = 'prop:' + q.id;
     h += '<option value="' + v + '"' + (l.usedFor === v ? ' selected' : '') + '>Deposit for ' + esc(propName(q)) + '</option>';
   });
@@ -927,6 +1028,7 @@ function propCard(p, i){
   h += '<div class="field"><label class="field-label" for="s-' + p.id + '">Property pool' +
        '<span class="info" tabindex="0">i<span class="tip">If this property is cross securitised with others, pick the same pool for each of them. Their values and loans are combined when working out equity.</span></span></label>' +
        poolSelect(p) + '</div>';
+  h += '<p class="empty-note" id="pn-' + p.id + '" hidden></p>';
   h += '<div class="banner banner-neutral" id="pb-' + p.id + '" hidden></div>';
 
   /* Owners */
@@ -1009,7 +1111,7 @@ function loansHtml(u){
   list.forEach(function(x){
     var l = x.loan, dt = depTarget(l), target = dt ? findProp(dt) : null, other = useForLabel(l.usedFor);
     h += '<div class="t-loan" id="tl-' + l.id + '">' +
-         '<div class="t-loan-head"><span class="t-loan-name">' + esc(loanName(l, x.index)) + '</span>' + tag(l.purpose) + '</div>' +
+         '<div class="t-loan-head"><span class="t-loan-name">' + esc(loanName(l, x.index) + (u.pool && !l.lender.trim() ? ', ' + propName(x.prop) : '')) + '</span>' + tag(l.purpose) + '</div>' +
          '<div class="t-line"><span class="k">Balance</span><span class="v">' + money(num(l.balance)) + '</span></div>' +
          (l.rate ? '<div class="t-line"><span class="k">Rate</span><span class="v">' + esc(l.rate) + '% p.a.</span></div>' : '') +
          (l.term ? '<div class="t-line"><span class="k">Term left</span><span class="v">' + esc(l.term) + (l.term === '1' ? ' year' : ' years') + '</span></div>' : '') +
@@ -1122,7 +1224,13 @@ function refresh(){
     }else{
       ob.hidden = true;
     }
-    var pb = $('pb-' + p.id);
+    var pb = $('pb-' + p.id), pn = $('pn-' + p.id);
+    var mates = p.pool ? poolMembers(p.pool).filter(function(q){ return q !== p; }).map(propName) : [];
+    pn.hidden = !mates.length;
+    if(mates.length){
+      pn.textContent = 'Cross securitised with ' + (mates.length < 2 ? mates[0] : mates.slice(0, -1).join(', ') + ' and ' + mates[mates.length - 1]) +
+                       '. Their values and loans are combined for the equity figures.';
+    }
     if(p.pool && poolMembers(p.pool).length < 2){
       pb.textContent = 'This is the only property in ' + poolName(p.pool) + '. Pick the same pool on each property it\'s cross securitised with.';
       pb.hidden = false;
@@ -1145,6 +1253,16 @@ function refresh(){
   $('tDebt').textContent = money(t.debt);
   $('tEquity').textContent = money(t.equity);
   $('tAvailable').textContent = money(t.available);
+  $('tRequired').textContent = money(t.required);
+  var us = units(), b = '';
+  if(us.length > 1){
+    us.forEach(function(u){
+      var label = u.pool ? poolName(u.pool) : propName(u.props[0]);
+      b += '<div class="sb-item"><p class="sb-label">' + esc(label) + ' equity up to 80%</p>' +
+           '<p class="sb-value">' + money(unitCalc(u).available) + '</p></div>';
+    });
+  }
+  $('breakdown').innerHTML = b;
   $('tOO').textContent = money(t.oo);
   $('tInv').textContent = money(t.inv);
   $('tRepay').textContent = money(t.repay);
@@ -1266,10 +1384,23 @@ calc.addEventListener('change', function(e){
     x = findLoan(ref);
     if(!x) return;
     x.loan.usedFor = el.value;
+    sanitizeLinks();
+    trackEngagement();
+    render();
+    var uf = $('ld-' + x.loan.id);
+    if(uf) uf.focus();
+    return;
   }else if(kind === 'pool'){
     p = findProp(ref);
     if(!p) return;
     p.pool = parseInt(el.value, 10) || 0;
+    normalizePools();
+    sanitizeLinks();
+    trackEngagement();
+    render();
+    var sf = $('s-' + p.id);
+    if(sf) sf.focus();
+    return;
   }else{
     return;
   }
@@ -1292,13 +1423,14 @@ calc.addEventListener('click', function(e){
     x.prop.loans = x.prop.loans.filter(function(l){ return l.id !== id; });
   }else if(act === 'add-owner'){
     p = findProp(id); if(!p) return;
-    var used = ownerShare(p);
-    var no = newOwner('', fmtPct(String(Math.max(0, Math.round((100 - used) * 100) / 100))));
+    var no = newOwner('', '');
     p.owners.push(no);
+    splitEvenly(p);
     focusId = 'on-' + no.id;
   }else if(act === 'rm-owner'){
     x = findOwner(id); if(!x || x.prop.owners.length < 2) return;
     x.prop.owners = x.prop.owners.filter(function(o){ return o.id !== id; });
+    splitEvenly(x.prop);
   }else if(act === 'toggle'){
     openId = openId === id ? '' : id;
     applyOpen();
@@ -1318,6 +1450,8 @@ calc.addEventListener('click', function(e){
     }
     props = props.filter(function(q){ return q.id !== id; });
     allLoans(function(l){ if(l.usedFor === 'prop:' + id) l.usedFor = ''; });
+    normalizePools();
+    sanitizeLinks();
   }else{
     return;
   }
@@ -1341,7 +1475,8 @@ $('addPropertyBtn').addEventListener('click', function(){
 });
 
 /* ---------- Save to / open from a file on the visitor's device ---------- */
-var FILE_APP = 'loantheory-property-tree';
+var FILE_APP = 'loantheory-available-equity';
+var FILE_APPS_OK = [ FILE_APP, 'loantheory-property-tree' ];
 function toISODateLocal(d){
   function p2(n){ return (n < 10 ? '0' : '') + n; }
   return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
@@ -1371,7 +1506,7 @@ function serialise(){
 function cleanText(v, max){ return typeof v === 'string' ? v.slice(0, max) : ''; }
 function cleanUse(v){ return v === 'inv' ? 'inv' : 'oo'; }
 function restore(data){
-  if(!data || data.app !== FILE_APP || !Array.isArray(data.properties) || !data.properties.length) return false;
+  if(!data || FILE_APPS_OK.indexOf(data.app) < 0 || !Array.isArray(data.properties) || !data.properties.length) return false;
   var list = data.properties.slice(0, MAX_PROPS);
   var built = list.map(function(d){
     var use = cleanUse(d.use);
@@ -1413,6 +1548,8 @@ function restore(data){
     });
   });
   props = built;
+  normalizePools();
+  sanitizeLinks();
   openId = built[0].id;
   return true;
 }
@@ -1424,7 +1561,7 @@ function fileMessage(kind, text, top){
 var openedFromTop = false;
 function saveFile(){
   var json = JSON.stringify(serialise(), null, 2);
-  var name = 'loan-theory-property-tree-' + toISODateLocal(new Date()) + '.json';
+  var name = 'loan-theory-available-equity-' + toISODateLocal(new Date()) + '.json';
   try{
     var blob = new Blob([ json ], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
@@ -1475,6 +1612,15 @@ $('fileInput').addEventListener('change', function(){
   };
   reader.readAsText(f);
 });
+
+/* Date on the print-only header, e.g. 23 October 2026 */
+function setPrintDate(){
+  try{
+    $('printDate').textContent = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+  }catch(err){}
+}
+setPrintDate();
+window.addEventListener('beforeprint', setPrintDate);
 
 var resizeTimer = null;
 window.addEventListener('resize', function(){
