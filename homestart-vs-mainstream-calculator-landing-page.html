@@ -213,7 +213,7 @@ window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool' }, makeEventI
             <label for="loanAmount">Home loan balance at settlement
               <span class="info-bubble" tabindex="0">i<span class="info-tooltip">HomeStart calculates your fixed repayment from this original settlement amount, not your current outstanding balance.</span></span>
             </label>
-            <div class="input-wrap"><span class="affix">$</span><input type="text" inputmode="numeric" id="loanAmount" value="500,000" oninput="trackEngagement();formatMoneyInput(this);calculate()"></div>
+            <div class="input-wrap"><span class="affix">$</span><input type="text" inputmode="numeric" id="loanAmount" value="500,000" oninput="trackEngagement();formatMoneyInput(this);updateRepaymentEstimate();calculate()"></div>
           </div>
 
           <div class="field-row">
@@ -229,6 +229,13 @@ window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool' }, makeEventI
               </label>
               <div class="input-wrap"><span class="affix">%</span><input type="number" id="mlRate" value="6.29" min="0" step="0.01" oninput="trackEngagement();calculate()"></div>
             </div>
+          </div>
+
+          <div class="field">
+            <label for="hsRepayInput">Your current HomeStart monthly repayment
+              <span class="info-bubble" tabindex="0">i<span class="info-tooltip">Enter your current monthly repayment from your latest HomeStart statement. We've pre-filled an estimate based on your loan balance until you enter your own.</span></span>
+            </label>
+            <div class="input-wrap"><span class="affix">$</span><input type="text" inputmode="numeric" id="hsRepayInput" value="2,941" oninput="trackEngagement();hsRepayEdited=true;formatMoneyInput(this);calculate()"></div>
           </div>
         </div>
 
@@ -277,7 +284,7 @@ window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool' }, makeEventI
           <details class="more-info" ontoggle="if(this.open) trackEngagement();">
             <summary>More information</summary>
             <div class="more-info-body">
-              <p><strong>How HomeStart repayments are calculated:</strong> Your repayment is fixed at your original loan amount divided by a set factor (160 for a Low Deposit Loan, 170 for a Graduate or Shared Equity loan). Interest is charged each month on your current balance at your HomeStart rate. Because the repayment amount doesn't automatically adjust to cover the interest owed, your loan balance can increase over time rather than steadily reducing.</p>
+              <p><strong>How HomeStart repayments are calculated:</strong> This calculator uses the monthly repayment you enter. HomeStart sets this as your original loan amount divided by a set factor (160 for a Low Deposit Loan, 170 for a Graduate or Shared Equity loan), so if you haven't entered your own, we estimate it using 170. Interest is charged each month on your current balance at your HomeStart rate. Because the repayment amount doesn't automatically adjust to cover the interest owed, your loan balance can increase over time rather than steadily reducing.</p>
               <p><strong>How the mainstream lender repayment is calculated:</strong> This uses a standard principal-and-interest amortisation schedule at the mainstream rate shown, over the loan term. Each repayment covers that month's interest plus a portion of the loan balance, so the balance steadily reduces to zero by the end of the term.</p>
             </div>
           </details>
@@ -336,6 +343,14 @@ window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool' }, makeEventI
     return principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -numPayments));
   }
 
+  let hsRepayEdited = false;
+  function updateRepaymentEstimate(){
+    if (hsRepayEdited) return;
+    const loan = parseFloat(document.getElementById('loanAmount').value.replace(/,/g, '')) || 0;
+    const div = REPAY_DIVISOR[document.getElementById('loanType').value];
+    document.getElementById('hsRepayInput').value = loan > 0 ? Math.round(loan / div).toLocaleString('en-AU') : '';
+  }
+
   function calculate(){
     const loanType = document.getElementById('loanType').value;
     const loanAmount = parseFloat(document.getElementById('loanAmount').value.replace(/,/g, '')) || 0;
@@ -346,7 +361,8 @@ window.relayPixelEvent('HSToolPageView', { content_name: 'HS Tool' }, makeEventI
     if (loanAmount <= 0) return;
 
     const divisor = REPAY_DIVISOR[loanType];
-    const hsMonthlyRepay = loanAmount / divisor;
+    const enteredRepay = parseFloat(document.getElementById('hsRepayInput').value.replace(/,/g, '')) || 0;
+    const hsMonthlyRepay = enteredRepay > 0 ? enteredRepay : loanAmount / divisor;
     const hsMonthlyRate = (hsRatePct / 100) / 12;
     let hsBalance = loanAmount, hsInterest12 = 0, hsMonth1Interest = 0;
     for (let m = 1; m <= 12; m++){
