@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Available Equity Calculator</title>
+<title>Property and Loan Tree Builder</title>
 
 <script>
 function makeEventId(){
@@ -15,7 +15,7 @@ window.relayPixelEvent = function(eventName, params, eventId){
     'https://www.loantheory.com.au'
   );
 };
-window.relayPixelEvent('AEToolPageView', { content_name: 'AE Tool' }, makeEventId());
+window.relayPixelEvent('PTToolPageView', { content_name: 'PT Tool' }, makeEventId());
 </script>
 
 <style>
@@ -79,25 +79,84 @@ body{
   text-transform:uppercase;
   letter-spacing:-0.01em;
   margin:0;
+  overflow-wrap:anywhere;
+}
+.group-label{
+  font-size:12px;
+  font-weight:600;
+  color:var(--navy);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  margin:12px 0 6px;
 }
 
-/* Row card (one per property) */
+/* Row cards */
 .row-card{
   border:1px solid var(--border);
   border-radius:15px;
   padding:8px 12px 12px 12px;
   margin-bottom:10px;
+  background:var(--white);
 }
 .card-head{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:8px;
   min-height:32px;
   margin-bottom:4px;
 }
+.loan-card{margin-bottom:8px;}
+
+/* Collapsible property cards: one open at a time */
+.card-toggle{
+  flex:1;
+  min-width:0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  background:transparent;
+  border:none;
+  border-radius:15px;
+  padding:4px 0;
+  margin:0;
+  text-align:left;
+  cursor:pointer;
+  font:inherit;
+  color:inherit;
+}
+.card-toggle-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.card-summary{font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.prop-card:not(.collapsed) .card-summary{display:none;}
+.card-toggle .glyph{
+  flex:none;
+  font-family:var(--body-font);
+  font-weight:700;
+  font-size:18px;
+  line-height:1;
+  width:18px;
+  text-align:center;
+  color:var(--orange);
+}
+.prop-card.collapsed{padding-bottom:8px;}
+.prop-card.collapsed .card-head{margin-bottom:0;}
+.prop-card.collapsed .card-body{display:none;}
+.prop-card:not(.collapsed){border-color:var(--navy);}
+.loan-card .card-head{margin-bottom:2px;}
+.loan-title{
+  font-size:12px;
+  font-weight:600;
+  color:var(--navy);
+}
 
 /* Fields */
-.field{margin-bottom:10px;}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0 10px;
+}
+.field{margin-bottom:10px;min-width:0;}
 .field-label{
   display:block;
   font-size:12px;
@@ -105,7 +164,7 @@ body{
   color:var(--navy);
   margin-bottom:4px;
 }
-.input-wrap{position:relative;flex:1;}
+.input-wrap{position:relative;}
 .input-wrap .affix{
   position:absolute;
   left:12px;
@@ -115,24 +174,45 @@ body{
   font:14px var(--body-font);
   pointer-events:none;
 }
-.input-wrap input{
+.field input,
+.field select{
   width:100%;
-  padding:8px 10px 8px 26px;
+  padding:8px 10px;
   border:1px solid var(--border);
   border-radius:15px;
-  background:var(--white);
+  background-color:var(--white);
   font:14px var(--body-font);
   color:var(--body-text);
 }
-.input-wrap input:focus{
+.input-wrap input{padding-left:26px;}
+.field input:focus,
+.field select:focus{
   border-color:var(--orange);
   outline:none;
 }
-.loan-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
+.field input::placeholder{color:#A9B4C6;}
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%237C8CA6'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:28px !important;
+  cursor:pointer;
 }
+
+/* Owner rows: name + share paired, remove control alongside */
+.owner-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 32px;
+  grid-template-areas:"name share rm";
+  gap:0 10px;
+  align-items:end;
+}
+.owner-row .o-name{grid-area:name;}
+.owner-row .o-share{grid-area:share;}
+.owner-row .o-rm{grid-area:rm;margin-bottom:10px;}
+.o-rm-spacer{width:32px;height:32px;}
 
 /* Buttons */
 .btn-add{
@@ -152,7 +232,7 @@ body{
   color:var(--white);
   border-style:solid;
 }
-.row-card .btn-add{margin-top:2px;}
+.btn-add.small{padding:9px 14px;}
 #addPropertyBtn{margin-bottom:4px;}
 
 .btn-remove{
@@ -188,22 +268,49 @@ body{
 }
 .btn-print:hover{opacity:0.92;}
 
-/* Ledger panel */
-.ledger{
-  background:var(--ledger-bg);
-  border-radius:15px;
-  padding:14px;
-  margin-top:6px;
+/* Save / open file */
+.file-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
 }
-.ledger-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  gap:12px;
+.btn-secondary{
+  display:block;
+  width:100%;
+  text-align:center;
+  background:var(--white);
+  color:var(--navy);
+  border:1px solid var(--navy);
+  border-radius:22px;
+  font:700 14px var(--body-font);
+  padding:12px 16px;
+  cursor:pointer;
 }
-.ledger-row + .ledger-row{margin-top:8px;}
-.ledger-label{font-size:12px;color:var(--body-text);}
-.ledger-value{font-size:17px;font-weight:700;color:var(--navy);}
+.btn-secondary:hover{background:var(--navy);color:var(--white);}
+.file-note{font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.45;}
+.open-link{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  padding:0;
+  margin:0 0 10px;
+  font:600 12px var(--body-font);
+  color:var(--navy);
+  text-decoration:underline;
+  cursor:pointer;
+}
+.open-link:hover{color:var(--orange);}
+#fileInput{display:none;}
+
+.empty-note{
+  font-size:12px;
+  color:var(--muted);
+  margin:2px 0 8px;
+}
+
 
 /* Dark navy summary box */
 .savings-box{
@@ -217,7 +324,7 @@ body{
   gap:12px;
 }
 .sb-item{position:relative;}
-.sb-wide{grid-column:1 / -1;}
+.sb-col{display:flex;flex-direction:column;gap:12px;}
 .sb-label{
   font-size:11px;
   font-weight:400;
@@ -233,8 +340,9 @@ body{
   margin:0;
 }
 
-/* Info tooltip (bubble anchors to the summary item so it never clips) */
+/* Info tooltip */
 .info{
+  position:relative;
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -245,9 +353,12 @@ body{
   background:var(--navy);
   color:var(--white);
   font:700 10px/1 var(--body-font);
+  text-transform:none;
+  letter-spacing:0;
   vertical-align:middle;
   cursor:help;
 }
+.sb-item .info{position:static;}
 .info.on-dark{background:var(--white);color:var(--navy);}
 .info .tip{
   display:none;
@@ -264,14 +375,196 @@ body{
   text-align:left;
   z-index:10;
 }
+.field-label .info .tip{left:auto;right:-90px;}
 .info:hover .tip,
 .info:focus .tip{display:block;}
 
-/* Banner */
-.banner{border-radius:10px;padding:10px 14px;font-size:13px;margin-top:10px;}
+/* Banners */
+.banner{border-radius:10px;padding:10px 14px;font-size:13px;margin-top:10px;line-height:1.4;}
 .banner-positive{background:var(--banner-positive-bg);color:var(--banner-positive-text);}
 .banner-negative{background:var(--banner-negative-bg);color:var(--banner-negative-text);}
 .banner-neutral{background:var(--banner-neutral-bg);color:var(--banner-neutral-text);}
+.row-card .banner{margin-top:0;margin-bottom:10px;}
+[hidden]{display:none !important;}
+
+/* ---------- Property tree ---------- */
+.tree-wrap{
+  position:relative;
+  background:var(--ledger-bg);
+  border-radius:15px;
+  padding:14px;
+}
+.tree-links{
+  position:absolute;
+  left:0;
+  top:0;
+  z-index:2;
+  pointer-events:none;
+  overflow:visible;
+}
+.tree-grid{
+  position:relative;
+  display:flex;
+  flex-wrap:wrap;
+  gap:22px 34px;
+  align-items:flex-start;
+}
+.t-unit{flex:1 1 230px;min-width:0;}
+.t-pool{
+  background:var(--white);
+  border:1px solid var(--navy);
+  border-radius:15px;
+  padding:10px 12px 12px;
+}
+.t-pool-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.t-pool-name{
+  font-family:var(--heading-font);
+  font-weight:800;
+  font-size:16px;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  color:var(--navy);
+  margin:0;
+}
+.t-pool-sub{font-size:11px;color:var(--muted);}
+.t-members{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-bottom:6px;
+}
+.t-member{flex:1 1 190px;min-width:0;}
+.t-member .t-prop{background:var(--ledger-bg);border-color:var(--ledger-bg);}
+.t-member .t-owner{background:var(--white);}
+.t-owners{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  justify-content:center;
+}
+.t-owner{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:4px 10px;
+  font-size:12px;
+  color:var(--navy);
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+.t-owner b{font-weight:600;}
+.t-owner span{color:var(--muted);}
+.t-stem{
+  width:2px;
+  height:14px;
+  background:var(--border);
+  margin:0 auto;
+}
+.t-prop{
+  background:var(--white);
+  border:1px solid var(--navy);
+  border-radius:15px;
+  padding:10px 12px;
+}
+.t-prop-name{
+  font-family:var(--heading-font);
+  font-weight:800;
+  font-size:16px;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  color:var(--navy);
+  margin:0 0 4px;
+  overflow-wrap:anywhere;
+}
+.t-line{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  margin-top:3px;
+}
+.t-line .k{color:var(--muted);}
+.t-line .v{color:var(--navy);font-weight:600;white-space:nowrap;}
+.tag{
+  display:inline-block;
+  border-radius:22px;
+  padding:2px 8px;
+  font-size:11px;
+  font-weight:600;
+  line-height:1.4;
+  white-space:nowrap;
+}
+.tag-oo{background:var(--navy);color:var(--white);border:1px solid var(--navy);}
+.tag-inv{background:var(--white);color:var(--navy);border:1px solid var(--navy);}
+.t-incoming{
+  font-size:11px;
+  color:var(--navy);
+  margin-top:6px;
+}
+.t-loans{
+  margin:0 0 0 14px;
+  padding:6px 0 0 16px;
+}
+.t-loan{
+  position:relative;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:8px 10px;
+  margin-top:8px;
+}
+.t-loan:first-child{margin-top:0;}
+.t-loan::after{
+  content:"";
+  position:absolute;
+  left:-17px;
+  top:-9px;
+  width:2px;
+  height:calc(50% + 10px);
+  background:var(--border);
+}
+.t-loan:first-child::after{top:-7px;height:calc(50% + 8px);}
+.t-loan:not(:last-child)::after{height:calc(100% + 10px);}
+.t-loan::before{
+  content:"";
+  position:absolute;
+  left:-17px;
+  top:50%;
+  width:16px;
+  height:2px;
+  background:var(--border);
+}
+.t-loan-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.t-loan-name{
+  font-size:13px;
+  font-weight:600;
+  color:var(--navy);
+  overflow-wrap:anywhere;
+}
+.t-link{
+  font-size:11px;
+  font-weight:600;
+  color:var(--navy);
+  margin-top:4px;
+}
+.t-none{
+  font-size:12px;
+  color:var(--muted);
+  padding:0;
+  margin-left:-16px;
+}
 
 /* Disclaimer */
 .disclaimer{
@@ -285,11 +578,22 @@ body{
 
 /* Responsive */
 @media (max-width:900px){
-  .sb-grid{grid-template-columns:1fr;}
 }
 @media (max-width:600px){
   body{padding:0;}
   .calc-container{padding:12px;border-radius:18px;}
+  .grid2{grid-template-columns:1fr;}
+  .file-row{grid-template-columns:1fr;}
+  .owner-row{
+    grid-template-columns:1fr 32px;
+    grid-template-areas:"name rm" "share share";
+  }
+  .owner-row .o-rm{margin-bottom:10px;}
+  .sb-grid{grid-template-columns:1fr;}
+  .tree-grid{flex-direction:column;align-items:stretch;}
+  .t-unit{flex:none !important;width:100%;}
+  .tree-links{display:none;}
+  .field-label .info .tip{right:auto;left:-120px;}
 }
 
 /* Print */
@@ -297,8 +601,11 @@ body{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   body{padding:0;}
   .calc-container{border:none;padding:0;box-shadow:none;}
-  .btn-add,.btn-remove,.btn-print,.info,.disclaimer{display:none !important;}
-  .row-card{break-inside:avoid;}
+  .btn-add,.btn-remove,.btn-print,.btn-secondary,.open-link,.file-note,#fileStatus,.info,.disclaimer,.o-rm-spacer{display:none !important;}
+  .tree-links{display:none !important;}
+  .row-card,.t-unit{break-inside:avoid;}
+  .prop-card.collapsed .card-body{display:block !important;}
+  .card-toggle .glyph,.card-summary,#maxNote{display:none !important;}
   .print-footer{
     display:block;
     margin-top:16px;
@@ -316,219 +623,868 @@ body{
 
 <div class="calc-container" id="calc">
 
+  <button type="button" class="open-link" data-file="open">Already saved your details? Open your file</button>
+  <div id="fileStatusTop"></div>
   <div id="propsWrap"></div>
   <button type="button" class="btn-add" id="addPropertyBtn">Add another property</button>
+  <p class="empty-note" id="maxNote" hidden>You've added the maximum of 12 properties.</p>
+  <datalist id="ownerNames"></datalist>
+
+  <h2 class="section-heading">Your property tree</h2>
+  <div class="tree-wrap" id="treeWrap">
+    <svg class="tree-links" id="treeLinks" aria-hidden="true"></svg>
+    <div class="tree-grid" id="treeGrid"></div>
+  </div>
 
   <h2 class="section-heading">Portfolio summary</h2>
   <div class="savings-box">
     <div class="sb-grid">
-      <div class="sb-item">
-        <p class="sb-label">Total property value</p>
-        <p class="sb-value" id="tValue">$0</p>
+      <div class="sb-col">
+        <div class="sb-item">
+          <p class="sb-label">Total property value</p>
+          <p class="sb-value" id="tValue">$0</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Overall LVR</p>
+          <p class="sb-value" id="tLvr">0%</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Total equity</p>
+          <p class="sb-value" id="tEquity">$0</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Total equity up to 80%<span class="info on-dark" tabindex="0">i<span class="tip">For each standalone property or property pool, 80% of its value less the loans secured against it, added up across the portfolio. Anything already above 80% counts as $0.</span></span></p>
+          <p class="sb-value" id="tAvailable">$0</p>
+        </div>
       </div>
-      <div class="sb-item">
-        <p class="sb-label">Total loan balances</p>
-        <p class="sb-value" id="tDebt">$0</p>
-      </div>
-      <div class="sb-item">
-        <p class="sb-label">Total equity</p>
-        <p class="sb-value" id="tEquity">$0</p>
-      </div>
-      <div class="sb-item">
-        <p class="sb-label">Total available equity (80%)<span class="info on-dark" tabindex="0">i<span class="tip">80% of each property's value, less the loans against it, added up across the portfolio. A property already above 80% counts as $0.</span></span></p>
-        <p class="sb-value" id="tAvailable">$0</p>
-      </div>
-      <div class="sb-item sb-wide">
-        <p class="sb-label">Total lending required to access this equity<span class="info on-dark" tabindex="0">i<span class="tip">Current loan balances plus the available equity above. This is the total borrowing once all of the equity has been accessed.</span></span></p>
-        <p class="sb-value" id="tRequired">$0</p>
+      <div class="sb-col">
+        <div class="sb-item">
+          <p class="sb-label">Total lending</p>
+          <p class="sb-value" id="tDebt">$0</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Owner occupied lending</p>
+          <p class="sb-value" id="tOO">$0</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Investment lending</p>
+          <p class="sb-value" id="tInv">$0</p>
+        </div>
+        <div class="sb-item">
+          <p class="sb-label">Total repayments (monthly)<span class="info on-dark" tabindex="0">i<span class="tip">All loan repayments converted to a monthly figure. Weekly is multiplied by 52 and fortnightly by 26, then divided by 12.</span></span></p>
+          <p class="sb-value" id="tRepay">$0</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="banner banner-neutral">This is the loan amount the client would need to show affordability for to access this equity, subject to a full lending assessment.</div>
+
+  <div id="notes"></div>
+
+  <div class="banner banner-neutral">Equity is worked out against the property, or property pool, that each loan is secured by. Using it for another purchase is subject to a full lending assessment, including showing you can afford the total lending.</div>
+
+  <div class="file-row">
+    <button type="button" class="btn-secondary" data-file="save">Save my details</button>
+    <button type="button" class="btn-secondary" data-file="open">Open a saved file</button>
+  </div>
+  <p class="file-note">Saves a small file to your device that you can open here later to pick up where you left off. You can keep it in your Files app, Google Drive or anywhere you like. Your details stay with you and aren't sent to us.</p>
+  <div id="fileStatus"></div>
+  <input type="file" id="fileInput" accept=".json,application/json">
 
   <button type="button" class="btn-print" onclick="trackPrint();window.print()">Print / Save as PDF</button>
 
-  <p class="disclaimer">These figures are indicative and general information only. They don't take your full financial situation into account and aren't personal financial advice. Available equity is 80% of estimated property value less current loan balances, and total lending required is current lending plus that available equity. Accessing equity is not guaranteed. It requires a full assessment of affordability and credit history, plus the lender's valuation, servicing calculations and lending policy at the time.</p>
+  <p class="disclaimer">These figures are indicative and general information only. They don't take your full financial situation into account and aren't personal financial advice. Equity up to 80% is 80% of the estimated value of each standalone property or property pool, less the loans secured against it. Loan purpose labels are for your own reference and don't determine tax treatment, so speak with your accountant about how your loans should be structured. Accessing equity is not guaranteed. It requires a full assessment of affordability and credit history, plus the lender's valuation, servicing calculations and lending policy at the time.</p>
 
-  <div class="print-footer">Loan Theory is a trading name of The Theory Group Pty Ltd, a Credit Representative of Connective Credit Services Pty Ltd. This document is general information only and is not personal financial advice, a loan offer, an approval or a pre-approval. Figures are estimates based on the information entered and 80% of estimated property value. Total lending required is current lending plus estimated available equity and does not imply eligibility. Accessing equity requires a full assessment of affordability and credit history, together with the lender's valuation, servicing calculations and lending criteria at the time of application. Speak with a Loan Theory credit representative before making any financial decision.</div>
+  <div class="print-footer">Loan Theory is a trading name of The Theory Group Pty Ltd, a Credit Representative of Connective Credit Services Pty Ltd. This document is general information only and is not personal financial, tax or legal advice, a loan offer, an approval or a pre-approval. Figures are estimates based on the information entered and 80% of estimated property value. Ownership, loan purpose and deposit links are shown as entered and have not been verified. Accessing equity requires a full assessment of affordability and credit history, together with the lender's valuation, servicing calculations and lending criteria at the time of application. Speak with a Loan Theory credit representative before making any financial decision, and with your accountant about tax and ownership structures.</div>
 
 </div>
 
 <script>
-var CALC_NAME = 'AE Tool';
+var CALC_NAME = 'PT Tool';
 var hasEngaged = false;
 function trackEngagement(){
   if(hasEngaged) return;
   hasEngaged = true;
-  window.relayPixelEvent('AEToolEngaged', { content_name: CALC_NAME }, makeEventId());
+  window.relayPixelEvent('PTToolEngaged', { content_name: CALC_NAME }, makeEventId());
 }
 var hasPrinted = false;
 window.trackPrint = function(){
   if(hasPrinted) return;
   hasPrinted = true;
-  window.relayPixelEvent('AEToolPrint', { content_name: CALC_NAME }, makeEventId());
+  window.relayPixelEvent('PTToolPrint', { content_name: CALC_NAME }, makeEventId());
 };
 
-/* ---------- State ---------- */
+/* ---------- State ----------
+   Loans are always entered on a property. A property can also be placed in a
+   property pool (cross securitised); pooled properties are grouped together
+   and their value and lending are combined for the equity figures. */
 var uid = 0;
-function newLoan(){ return { id: 'l' + (++uid), balance: '' }; }
-function newProp(){ return { id: 'p' + (++uid), value: '', loans: [ newLoan() ] }; }
-var props = [ newProp() ];
+function nid(prefix){ return prefix + (++uid); }
+function newOwner(name, share){ return { id: nid('o'), name: name || '', share: share == null ? '100' : String(share) }; }
+function newLoan(purpose){ return { id: nid('l'), lender: '', balance: '', purpose: purpose || 'oo', purposeSet: false, usedFor: '', rate: '', term: '', repay: '', freq: 'monthly' }; }
+function newProp(use, owners){
+  return { id: nid('p'), name: '', value: '', use: use, pool: 0, owners: owners || [ newOwner('', '100') ], loans: [ newLoan(use) ] };
+}
+var MAX_PROPS = 12;
+var MAX_LOANS = 4; /* loan splits per property */
+var props = [ newProp('oo') ];
+var openId = props[0].id; /* only one property card is open at a time */
 
 /* ---------- Helpers ---------- */
+function $(id){ return document.getElementById(id); }
 function num(s){
   var n = parseInt(String(s).replace(/[^0-9]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+function pct(s){
+  var n = parseFloat(String(s).replace(/[^0-9.]/g, ''));
   return isNaN(n) ? 0 : n;
 }
 function fmtInput(s){
   var d = String(s).replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
   return d.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+function fmtPct(s){
+  var t = String(s).replace(/[^0-9.]/g, '');
+  var i = t.indexOf('.');
+  if(i > -1) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '').slice(0, 2);
+  t = t.replace(/^0+(?=\d)/, '');
+  if(parseFloat(t) > 100) t = '100';
+  return t;
+}
 function money(n){
   var r = Math.round(n);
   return (r < 0 ? '-' : '') + '$' + Math.abs(r).toLocaleString('en-AU');
 }
-function propCalc(p){
-  var v = num(p.value), d = 0;
-  p.loans.forEach(function(l){ d += num(l.balance); });
-  return { value: v, debt: d, equity: v - d, available: Math.max(0, v * 0.8 - d) };
+function pctText(n){
+  return (Math.round(n * 10) / 10).toLocaleString('en-AU') + '%';
 }
-function totals(){
-  var t = { value: 0, debt: 0, equity: 0, available: 0, required: 0 };
-  props.forEach(function(p){
-    var c = propCalc(p);
-    t.value += c.value; t.debt += c.debt; t.equity += c.equity; t.available += c.available;
-  });
-  t.required = t.debt + t.available;
-  return t;
+function esc(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function findProp(id){
-  for(var i = 0; i < props.length; i++){ if(props[i].id === id) return props[i]; }
+var FREQS = [ ['weekly', 'Weekly', 52], ['fortnightly', 'Fortnightly', 26], ['monthly', 'Monthly', 12] ];
+function freqInfo(v){
+  for(var i = 0; i < FREQS.length; i++){ if(FREQS[i][0] === v) return FREQS[i]; }
+  return FREQS[2];
+}
+function monthlyRepay(l){ return num(l.repay) * freqInfo(l.freq)[2] / 12; }
+function fmtTerm(s){ return String(s).replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '').slice(0, 2); }
+function useLabel(u){ return u === 'inv' ? 'Investment' : 'Owner occupied'; }
+function tag(u){ return '<span class="tag ' + (u === 'inv' ? 'tag-inv' : 'tag-oo') + '">' + useLabel(u) + '</span>'; }
+/* What a loan's money was used for. 'prop:<id>' means the deposit on that property. */
+var USES = [ ['debtcon', 'Debt consolidation'], ['car', 'Car purchase'], ['shares', 'Share purchase'], ['other', 'Other'] ];
+function useForLabel(v){
+  for(var i = 0; i < USES.length; i++){ if(USES[i][0] === v) return USES[i][1]; }
+  return '';
+}
+function depTarget(l){ return l.usedFor && l.usedFor.indexOf('prop:') === 0 ? l.usedFor.slice(5) : ''; }
+function propIndex(id){
+  for(var i = 0; i < props.length; i++){ if(props[i].id === id) return i; }
+  return -1;
+}
+function findProp(id){ var i = propIndex(id); return i < 0 ? null : props[i]; }
+function propName(p){ return p.name.trim() || ('Property ' + (propIndex(p.id) + 1)); }
+function poolName(n){ return 'Property pool ' + n; }
+function loanName(l, j){ return l.lender.trim() || ('Loan ' + (j + 1)); }
+function poolMembers(n){ return props.filter(function(p){ return p.pool === n; }); }
+function allLoans(fn){
+  props.forEach(function(p){ p.loans.forEach(function(l, j){ fn(l, j, p); }); });
+}
+function findLoan(lid){
+  var hit = null;
+  allLoans(function(l, j, p){ if(l.id === lid) hit = { prop: p, loan: l, index: j }; });
+  return hit;
+}
+function findOwner(oid){
+  for(var i = 0; i < props.length; i++){
+    for(var j = 0; j < props[i].owners.length; j++){
+      if(props[i].owners[j].id === oid) return { prop: props[i], owner: props[i].owners[j] };
+    }
+  }
   return null;
 }
+function ownerShare(p){
+  var s = 0;
+  p.owners.forEach(function(o){ s += pct(o.share); });
+  return s;
+}
 
-/* ---------- Render ---------- */
+/* Security units: each standalone property, and each property pool, in the
+   order they first appear. Equity is worked out per unit. */
+function units(){
+  var out = [], seen = {};
+  props.forEach(function(p){
+    if(!p.pool){ out.push({ pool: 0, props: [ p ] }); return; }
+    if(seen[p.pool]) return;
+    seen[p.pool] = 1;
+    out.push({ pool: p.pool, props: poolMembers(p.pool) });
+  });
+  return out;
+}
+function unitLoans(u){
+  var out = [];
+  u.props.forEach(function(p){ p.loans.forEach(function(l, j){ out.push({ loan: l, index: j, prop: p }); }); });
+  return out;
+}
+function unitCalc(u){
+  var v = 0, d = 0;
+  u.props.forEach(function(p){
+    v += num(p.value);
+    p.loans.forEach(function(l){ d += num(l.balance); });
+  });
+  return { value: v, debt: d, equity: v - d, available: Math.max(0, v * 0.8 - d), lvr: v > 0 ? d / v * 100 : 0 };
+}
+function totals(){
+  var t = { value: 0, debt: 0, equity: 0, available: 0, oo: 0, inv: 0, repay: 0 };
+  units().forEach(function(u){
+    var c = unitCalc(u);
+    t.value += c.value; t.debt += c.debt; t.equity += c.equity; t.available += c.available;
+  });
+  allLoans(function(l){
+    if(l.purpose === 'inv') t.inv += num(l.balance); else t.oo += num(l.balance);
+    t.repay += monthlyRepay(l);
+  });
+  t.lvr = t.value > 0 ? t.debt / t.value * 100 : 0;
+  return t;
+}
+function incomingLinks(p){
+  var out = [];
+  allLoans(function(l, j, src){ if(depTarget(l) === p.id) out.push({ prop: src, loan: l, index: j }); });
+  return out;
+}
+function poolOptionCount(){
+  var n = Math.max(1, Math.floor(props.length / 2));
+  props.forEach(function(p){ if(p.pool > n) n = p.pool; });
+  return n;
+}
+
+/* ---------- Render: input cards ---------- */
 var XICON = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>';
 
-function removeBtn(act, pid, lid, label){
-  return '<button type="button" class="btn-remove" data-act="' + act + '" data-p="' + pid + '"' +
-    (lid ? ' data-l="' + lid + '"' : '') + ' aria-label="' + label + '">' + XICON + '</button>';
+function removeBtn(act, id, label, extraClass){
+  return '<button type="button" class="btn-remove' + (extraClass ? ' ' + extraClass : '') + '" data-act="' + act + '" data-id="' + id + '" aria-label="' + esc(label) + '">' + XICON + '</button>';
 }
-function inputField(id, kind, pid, lid, value, placeholder){
+function moneyField(id, kind, ref, value, placeholder){
   return '<div class="input-wrap"><span class="affix">$</span>' +
     '<input id="' + id + '" type="text" inputmode="numeric" autocomplete="off" maxlength="13"' +
-    ' data-kind="' + kind + '" data-p="' + pid + '"' + (lid ? ' data-l="' + lid + '"' : '') +
-    ' value="' + value + '" placeholder="' + placeholder + '"></div>';
+    ' data-kind="' + kind + '" data-ref="' + ref + '" value="' + esc(value) + '" placeholder="' + placeholder + '"></div>';
+}
+function useSelect(id, kind, ref, value){
+  return '<select id="' + id + '" data-kind="' + kind + '" data-ref="' + ref + '">' +
+    '<option value="oo"' + (value === 'oo' ? ' selected' : '') + '>Owner occupied</option>' +
+    '<option value="inv"' + (value === 'inv' ? ' selected' : '') + '>Investment</option>' +
+    '</select>';
+}
+function poolSelect(p){
+  var h = '<select id="s-' + p.id + '" data-kind="pool" data-ref="' + p.id + '">' +
+          '<option value="0">Not cross securitised</option>';
+  for(var n = 1; n <= poolOptionCount(); n++){
+    h += '<option value="' + n + '"' + (p.pool === n ? ' selected' : '') + '>' + poolName(n) + '</option>';
+  }
+  return h + '</select>';
+}
+function freqSelect(l){
+  var h = '<select id="lf-' + l.id + '" data-kind="freq" data-ref="' + l.id + '">';
+  FREQS.forEach(function(f){ h += '<option value="' + f[0] + '"' + (l.freq === f[0] ? ' selected' : '') + '>' + f[1] + '</option>'; });
+  return h + '</select>';
+}
+function usedForSelect(l, p){
+  var h = '<select id="ld-' + l.id + '" data-kind="usedfor" data-ref="' + l.id + '">' +
+    '<option value="">Not specified</option>';
+  props.forEach(function(q){
+    if(q.id === p.id) return;
+    var v = 'prop:' + q.id;
+    h += '<option value="' + v + '"' + (l.usedFor === v ? ' selected' : '') + '>Deposit for ' + esc(propName(q)) + '</option>';
+  });
+  USES.forEach(function(u){
+    h += '<option value="' + u[0] + '"' + (l.usedFor === u[0] ? ' selected' : '') + '>' + u[1] + '</option>';
+  });
+  return h + '</select>';
 }
 
-function render(){
-  var h = '';
-  props.forEach(function(p, i){
-    var c = propCalc(p);
-    h += '<div class="row-card">';
-    h += '<div class="card-head"><h3 class="card-heading">Property ' + (i + 1) + '</h3>' +
-         (props.length > 1 ? removeBtn('rm-prop', p.id, '', 'Remove property ' + (i + 1)) : '') + '</div>';
-    h += '<div class="field"><label class="field-label" for="v-' + p.id + '">Estimated property value</label>' +
-         inputField('v-' + p.id, 'value', p.id, '', p.value, '750,000') + '</div>';
-    p.loans.forEach(function(l, j){
-      var many = p.loans.length > 1;
-      h += '<div class="field"><label class="field-label" for="b-' + l.id + '">' +
-           (many ? 'Loan ' + (j + 1) + ' balance owing' : 'Balance owing') + '</label>' +
-           '<div class="loan-row">' + inputField('b-' + l.id, 'loan', p.id, l.id, l.balance, '420,000') +
-           (many ? removeBtn('rm-loan', p.id, l.id, 'Remove loan ' + (j + 1)) : '') + '</div></div>';
-    });
-    h += '<button type="button" class="btn-add" data-act="add-loan" data-p="' + p.id + '">Add another loan</button>';
-    h += '<div class="ledger">' +
-         '<div class="ledger-row"><span class="ledger-label">Total loan balance</span><span class="ledger-value" id="d-' + p.id + '">' + money(c.debt) + '</span></div>' +
-         '<div class="ledger-row"><span class="ledger-label">Total equity</span><span class="ledger-value" id="e-' + p.id + '">' + money(c.equity) + '</span></div>' +
-         '<div class="ledger-row"><span class="ledger-label">Available equity (80%)</span><span class="ledger-value" id="a-' + p.id + '">' + money(c.available) + '</span></div>' +
+function propCard(p, i){
+  var open = p.id === openId;
+  var h = '<div class="row-card prop-card' + (open ? '' : ' collapsed') + '" id="card-' + p.id + '">';
+  h += '<div class="card-head">' +
+       '<button type="button" class="card-toggle" data-act="toggle" data-id="' + p.id + '" aria-expanded="' + open + '" aria-controls="body-' + p.id + '">' +
+         '<span class="card-toggle-text"><span class="card-heading" id="h-' + p.id + '">' + esc(propName(p)) + '</span>' +
+         '<span class="card-summary" id="cs-' + p.id + '"></span></span>' +
+         '<span class="glyph" aria-hidden="true">' + (open ? '\u2212' : '+') + '</span>' +
+       '</button>' +
+       (props.length > 1 ? removeBtn('rm-prop', p.id, 'Remove ' + propName(p)) : '') + '</div>';
+  h += '<div class="card-body" id="body-' + p.id + '">';
+
+  h += '<div class="field"><label class="field-label" for="n-' + p.id + '">Property name or address</label>' +
+       '<input id="n-' + p.id + '" type="text" autocomplete="off" maxlength="80" data-kind="name" data-ref="' + p.id + '" value="' + esc(p.name) + '" placeholder="Property ' + (i + 1) + '"></div>';
+
+  h += '<div class="grid2">' +
+       '<div class="field"><label class="field-label" for="v-' + p.id + '">Estimated property value</label>' +
+       moneyField('v-' + p.id, 'value', p.id, p.value, '750,000') + '</div>' +
+       '<div class="field"><label class="field-label" for="u-' + p.id + '">Property use</label>' +
+       useSelect('u-' + p.id, 'use', p.id, p.use) + '</div>' +
+       '</div>';
+
+  h += '<div class="field"><label class="field-label" for="s-' + p.id + '">Property pool' +
+       '<span class="info" tabindex="0">i<span class="tip">If this property is cross securitised with others, pick the same pool for each of them. Their values and loans are combined when working out equity.</span></span></label>' +
+       poolSelect(p) + '</div>';
+  h += '<div class="banner banner-neutral" id="pb-' + p.id + '" hidden></div>';
+
+  /* Owners */
+  h += '<p class="group-label">Owners</p>';
+  h += '<div class="banner banner-neutral" id="ob-' + p.id + '" hidden></div>';
+  p.owners.forEach(function(o, k){
+    h += '<div class="owner-row">' +
+         '<div class="field o-name"><label class="field-label" for="on-' + o.id + '">Owner ' + (k + 1) + '</label>' +
+         '<input id="on-' + o.id + '" type="text" autocomplete="off" maxlength="60" list="ownerNames" data-kind="oname" data-ref="' + o.id + '" value="' + esc(o.name) + '" placeholder="Person, company or trust"></div>' +
+         '<div class="field o-share"><label class="field-label" for="os-' + o.id + '">Ownership share</label>' +
+         '<div class="input-wrap"><span class="affix">%</span><input id="os-' + o.id + '" type="text" inputmode="decimal" autocomplete="off" maxlength="6" data-kind="oshare" data-ref="' + o.id + '" value="' + esc(o.share) + '" placeholder="50"></div></div>' +
+         (p.owners.length > 1 ? removeBtn('rm-owner', o.id, 'Remove owner ' + (k + 1), 'o-rm') : '<span class="o-rm o-rm-spacer"></span>') +
          '</div>';
-    h += '</div>';
   });
-  document.getElementById('propsWrap').innerHTML = h;
-  updateResults();
+  h += '<button type="button" class="btn-add small" data-act="add-owner" data-id="' + p.id + '">Add another owner</button>';
+
+  /* Loans */
+  h += '<p class="group-label">Loans secured by this property</p>';
+  if(!p.loans.length){
+    h += '<p class="empty-note">No loans. This property is owned outright.</p>';
+  }
+  p.loans.forEach(function(l, j){
+    h += '<div class="row-card loan-card">' +
+         '<div class="card-head"><span class="loan-title" id="lt-' + l.id + '">' + esc(loanName(l, j)) + '</span>' +
+         removeBtn('rm-loan', l.id, 'Remove loan ' + (j + 1)) + '</div>' +
+         '<div class="grid2">' +
+           '<div class="field"><label class="field-label" for="ln-' + l.id + '">Lender</label>' +
+           '<input id="ln-' + l.id + '" type="text" autocomplete="off" maxlength="60" data-kind="lender" data-ref="' + l.id + '" value="' + esc(l.lender) + '" placeholder="e.g. CBA"></div>' +
+           '<div class="field"><label class="field-label" for="lb-' + l.id + '">Balance owing</label>' +
+           moneyField('lb-' + l.id, 'balance', l.id, l.balance, '420,000') + '</div>' +
+           '<div class="field"><label class="field-label" for="lr-' + l.id + '">Interest rate (p.a.)</label>' +
+           '<div class="input-wrap"><span class="affix">%</span><input id="lr-' + l.id + '" type="text" inputmode="decimal" autocomplete="off" maxlength="5" data-kind="rate" data-ref="' + l.id + '" value="' + esc(l.rate) + '" placeholder="6.19"></div></div>' +
+           '<div class="field"><label class="field-label" for="lt2-' + l.id + '">Remaining term (years)</label>' +
+           '<input id="lt2-' + l.id + '" type="text" inputmode="numeric" autocomplete="off" maxlength="2" data-kind="term" data-ref="' + l.id + '" value="' + esc(l.term) + '" placeholder="25"></div>' +
+           '<div class="field"><label class="field-label" for="lr2-' + l.id + '">Repayment</label>' +
+           moneyField('lr2-' + l.id, 'repay', l.id, l.repay, '2,800') + '</div>' +
+           '<div class="field"><label class="field-label" for="lf-' + l.id + '">Repayment frequency</label>' + freqSelect(l) + '</div>' +
+           '<div class="field"><label class="field-label" for="lp-' + l.id + '">Loan purpose</label>' +
+           useSelect('lp-' + l.id, 'purpose', l.id, l.purpose) + '</div>' +
+           '<div class="field"><label class="field-label" for="ld-' + l.id + '">Used for' +
+           '<span class="info" tabindex="0">i<span class="tip">What the money from this loan was used for. If it funded the deposit on another property, pick that property and it will be linked in the tree.</span></span></label>' +
+           usedForSelect(l, p) + '</div>' +
+         '</div></div>';
+  });
+  if(p.loans.length < MAX_LOANS){
+    h += '<button type="button" class="btn-add small" data-act="add-loan" data-id="' + p.id + '">Add another loan</button>';
+  }else{
+    h += '<p class="empty-note">You\'ve added the maximum of ' + MAX_LOANS + ' loan splits for this property.</p>';
+  }
+  h += '</div></div>';
+  return h;
 }
 
-function updateResults(){
-  props.forEach(function(p){
-    var c = propCalc(p);
-    var d = document.getElementById('d-' + p.id);
-    if(!d) return;
-    d.textContent = money(c.debt);
-    document.getElementById('e-' + p.id).textContent = money(c.equity);
-    document.getElementById('a-' + p.id).textContent = money(c.available);
+/* ---------- Render: tree ---------- */
+function ownersHtml(p){
+  var h = '<div class="t-owners">';
+  p.owners.forEach(function(o, k){
+    var nm = o.name.trim() || ('Owner ' + (k + 1));
+    h += '<span class="t-owner"><b>' + esc(nm) + '</b> <span>' + esc(pctText(pct(o.share))) + '</span></span>';
   });
+  return h + '</div><div class="t-stem"></div>';
+}
+function incomingHtml(p){
+  var h = '';
+  incomingLinks(p).forEach(function(x){
+    h += '<div class="t-incoming">Deposit from ' + esc(loanName(x.loan, x.index)) + ', ' + esc(propName(x.prop)) + '</div>';
+  });
+  return h;
+}
+function figures(c){
+  return '<div class="t-line"><span class="k">Value</span><span class="v">' + money(c.value) + '</span></div>' +
+         '<div class="t-line"><span class="k">Lending</span><span class="v">' + money(c.debt) + '</span></div>' +
+         '<div class="t-line"><span class="k">Equity</span><span class="v">' + money(c.equity) + '</span></div>' +
+         '<div class="t-line"><span class="k">LVR</span><span class="v">' + pctText(c.lvr) + '</span></div>';
+}
+function loansHtml(u){
+  var list = unitLoans(u);
+  var h = '<div class="t-loans">';
+  if(!list.length) h += '<div class="t-none">No loans</div>';
+  list.forEach(function(x){
+    var l = x.loan, dt = depTarget(l), target = dt ? findProp(dt) : null, other = useForLabel(l.usedFor);
+    h += '<div class="t-loan" id="tl-' + l.id + '">' +
+         '<div class="t-loan-head"><span class="t-loan-name">' + esc(loanName(l, x.index)) + '</span>' + tag(l.purpose) + '</div>' +
+         '<div class="t-line"><span class="k">Balance</span><span class="v">' + money(num(l.balance)) + '</span></div>' +
+         (l.rate ? '<div class="t-line"><span class="k">Rate</span><span class="v">' + esc(l.rate) + '% p.a.</span></div>' : '') +
+         (l.term ? '<div class="t-line"><span class="k">Term left</span><span class="v">' + esc(l.term) + (l.term === '1' ? ' year' : ' years') + '</span></div>' : '') +
+         (num(l.repay) ? '<div class="t-line"><span class="k">Repayment</span><span class="v">' + money(num(l.repay)) + ' ' + freqInfo(l.freq)[1].toLowerCase() + '</span></div>' : '') +
+         (target ? '<div class="t-link">Deposit for ' + esc(propName(target)) + '</div>' :
+          other ? '<div class="t-link">Used for ' + other.toLowerCase() + '</div>' : '') +
+         '</div>';
+  });
+  return h + '</div>';
+}
+
+function renderTree(){
+  var h = '';
+  units().forEach(function(u){
+    var c = unitCalc(u);
+    if(u.pool){
+      var n = u.props.length;
+      h += '<div class="t-unit" style="flex:' + n + ' 1 ' + (n * 230 + (n - 1) * 34) + 'px">';
+      h += '<div class="t-pool"><div class="t-pool-head"><p class="t-pool-name">' + poolName(u.pool) + '</p>' +
+           '<span class="t-pool-sub">Cross securitised</span></div><div class="t-members">';
+      u.props.forEach(function(p){
+        h += '<div class="t-member">' + ownersHtml(p) +
+             '<div class="t-prop" id="tp-' + p.id + '"><p class="t-prop-name">' + esc(propName(p)) + '</p>' + tag(p.use) +
+             '<div class="t-line"><span class="k">Value</span><span class="v">' + money(num(p.value)) + '</span></div>' +
+             incomingHtml(p) + '</div></div>';
+      });
+      h += '</div>' + figures(c) + '</div>' + loansHtml(u) + '</div>';
+    }else{
+      var p0 = u.props[0];
+      h += '<div class="t-unit">' + ownersHtml(p0) +
+           '<div class="t-prop" id="tp-' + p0.id + '"><p class="t-prop-name">' + esc(propName(p0)) + '</p>' + tag(p0.use) +
+           figures(c) + incomingHtml(p0) + '</div>' + loansHtml(u) + '</div>';
+    }
+  });
+  $('treeGrid').innerHTML = h;
+  drawLinks();
+}
+
+/* Dashed connectors from a loan to the property it helped buy */
+function drawLinks(){
+  var wrap = $('treeWrap'), svg = $('treeLinks');
+  if(!wrap || !svg) return;
+  var wr = wrap.getBoundingClientRect();
+  svg.setAttribute('width', wr.width);
+  svg.setAttribute('height', wr.height);
+  svg.setAttribute('viewBox', '0 0 ' + wr.width + ' ' + wr.height);
+  var paths = '';
+  allLoans(function(l, j, src){
+    var tp = findProp(depTarget(l));
+    if(!tp) return;
+    if(src.pool && tp.pool === src.pool) return; /* funds a property in its own pool, the text label carries it */
+    var a = $('tl-' + l.id), b = $('tp-' + tp.id);
+    if(!a || !b) return;
+    var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    var aMid = ra.left + ra.width / 2, bMid = rb.left + rb.width / 2;
+    if(Math.abs(aMid - bMid) < 40) return; /* same column, the text label carries it */
+    var x1, x2, dir;
+    if(bMid > aMid){ x1 = ra.right; x2 = rb.left; dir = 1; }
+    else{ x1 = ra.left; x2 = rb.right; dir = -1; }
+    x1 -= wr.left; x2 -= wr.left;
+    var y1 = ra.top + ra.height / 2 - wr.top;
+    var y2 = rb.top + Math.min(24, rb.height / 2) - wr.top;
+    var dx = Math.max(20, Math.abs(x2 - x1) / 2) * dir;
+    paths += '<path d="M' + x1 + ' ' + y1 + ' C' + (x1 + dx) + ' ' + y1 + ' ' + (x2 - dx) + ' ' + y2 + ' ' + (x2 - 3 * dir) + ' ' + y2 + '"' +
+             ' fill="none" stroke="#14305F" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ptArrow)"/>';
+  });
+  svg.innerHTML = '<defs><marker id="ptArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+                  '<path d="M0 0L10 5L0 10z" fill="#14305F"/></marker></defs>' + paths;
+}
+
+/* ---------- Refresh (no card rebuild, keeps focus while typing) ---------- */
+function refreshOwnerNames(){
+  var seen = {}, h = '';
+  props.forEach(function(p){
+    p.owners.forEach(function(o){
+      var n = o.name.trim();
+      if(n && !seen[n.toLowerCase()]){ seen[n.toLowerCase()] = 1; h += '<option value="' + esc(n) + '"></option>'; }
+    });
+  });
+  $('ownerNames').innerHTML = h;
+}
+
+function refreshNotes(){
+  var h = '';
+  allLoans(function(l, j, p){
+    var t = findProp(depTarget(l));
+    if(!t || t.use === l.purpose) return;
+    h += '<div class="banner banner-neutral">' + esc(loanName(l, j)) + ' on ' + esc(propName(p)) + ' is marked ' + useLabel(l.purpose).toLowerCase() +
+         ' but helped buy ' + esc(propName(t)) + ', which is ' + (t.use === 'inv' ? 'an investment' : 'owner occupied') +
+         '. A loan\'s purpose generally follows how the money was used, not the property it\'s secured against. Worth checking with your accountant.</div>';
+  });
+  $('notes').innerHTML = h;
+}
+
+function refresh(){
+  props.forEach(function(p){
+    var hd = $('h-' + p.id);
+    if(!hd) return;
+    hd.textContent = propName(p);
+    var cs = $('cs-' + p.id);
+    if(cs){
+      var bits = [ money(num(p.value)), useLabel(p.use), p.loans.length + (p.loans.length === 1 ? ' loan' : ' loans') ];
+      if(p.pool) bits.push(poolName(p.pool));
+      cs.textContent = bits.join(' \u00b7 ');
+    }
+    var share = ownerShare(p), ob = $('ob-' + p.id);
+    if(Math.abs(share - 100) > 0.01){
+      ob.textContent = 'Ownership shares add up to ' + pctText(share) + '. They should total 100%.';
+      ob.hidden = false;
+    }else{
+      ob.hidden = true;
+    }
+    var pb = $('pb-' + p.id);
+    if(p.pool && poolMembers(p.pool).length < 2){
+      pb.textContent = 'This is the only property in ' + poolName(p.pool) + '. Pick the same pool on each property it\'s cross securitised with.';
+      pb.hidden = false;
+    }else{
+      pb.hidden = true;
+    }
+    p.loans.forEach(function(l, j){
+      var lt = $('lt-' + l.id);
+      if(lt) lt.textContent = loanName(l, j);
+    });
+  });
+  /* keep "Deposit for" labels in step with property names */
+  var opts = document.querySelectorAll('select[data-kind="usedfor"] option[value^="prop:"]');
+  for(var k = 0; k < opts.length; k++){
+    var t0 = findProp(opts[k].value.slice(5));
+    if(t0) opts[k].textContent = 'Deposit for ' + propName(t0);
+  }
   var t = totals();
-  document.getElementById('tValue').textContent = money(t.value);
-  document.getElementById('tDebt').textContent = money(t.debt);
-  document.getElementById('tEquity').textContent = money(t.equity);
-  document.getElementById('tAvailable').textContent = money(t.available);
-  document.getElementById('tRequired').textContent = money(t.required);
+  $('tValue').textContent = money(t.value);
+  $('tDebt').textContent = money(t.debt);
+  $('tEquity').textContent = money(t.equity);
+  $('tAvailable').textContent = money(t.available);
+  $('tOO').textContent = money(t.oo);
+  $('tInv').textContent = money(t.inv);
+  $('tRepay').textContent = money(t.repay);
+  $('tLvr').textContent = pctText(t.lvr);
+  refreshOwnerNames();
+  refreshNotes();
+  renderTree();
+}
+
+function applyOpen(){
+  props.forEach(function(p){
+    var card = $('card-' + p.id);
+    if(!card) return;
+    var open = p.id === openId;
+    card.classList.toggle('collapsed', !open);
+    var t = card.querySelector('.card-toggle');
+    t.setAttribute('aria-expanded', open);
+    t.querySelector('.glyph').textContent = open ? '\u2212' : '+';
+  });
+}
+function refreshAddButton(){
+  var full = props.length >= MAX_PROPS;
+  $('addPropertyBtn').hidden = full;
+  $('maxNote').hidden = !full;
+}
+function render(){
+  if(!findProp(openId)) openId = props.length ? props[0].id : '';
+  refreshAddButton();
+  var h = '';
+  props.forEach(function(p, i){ h += propCard(p, i); });
+  $('propsWrap').innerHTML = h;
+  refresh();
 }
 
 /* ---------- Events ---------- */
-var calc = document.getElementById('calc');
+var calc = $('calc');
 
-calc.addEventListener('input', function(e){
-  var el = e.target;
-  if(!el.matches || !el.matches('input[data-kind]')) return;
+function keepCaret(el, f){
   var raw = el.value;
   var pos = el.selectionStart;
-  var digitsBefore = raw.slice(0, pos == null ? raw.length : pos).replace(/[^0-9]/g, '').length;
-  var f = fmtInput(raw);
+  var before = raw.slice(0, pos == null ? raw.length : pos).replace(/[^0-9.]/g, '').length;
   el.value = f;
   try{
     var np = 0, cnt = 0;
-    while(np < f.length && cnt < digitsBefore){ if(/[0-9]/.test(f.charAt(np))) cnt++; np++; }
+    while(np < f.length && cnt < before){ if(/[0-9.]/.test(f.charAt(np))) cnt++; np++; }
     el.setSelectionRange(np, np);
   }catch(err){}
-  var p = findProp(el.getAttribute('data-p'));
-  if(!p) return;
-  if(el.getAttribute('data-kind') === 'value'){
-    p.value = f;
+}
+
+calc.addEventListener('input', function(e){
+  var el = e.target;
+  if(!el.getAttribute || el.tagName !== 'INPUT') return;
+  var kind = el.getAttribute('data-kind'), ref = el.getAttribute('data-ref');
+  if(!kind) return;
+  var p, x;
+  if(kind === 'value' || kind === 'balance'){
+    var f = fmtInput(el.value);
+    keepCaret(el, f);
+    if(kind === 'value'){ p = findProp(ref); if(p) p.value = f; }
+    else{ x = findLoan(ref); if(x) x.loan.balance = f; }
+  }else if(kind === 'oshare'){
+    var s = fmtPct(el.value);
+    keepCaret(el, s);
+    x = findOwner(ref); if(x) x.owner.share = s;
+  }else if(kind === 'name'){
+    p = findProp(ref); if(p) p.name = el.value;
+  }else if(kind === 'oname'){
+    x = findOwner(ref); if(x) x.owner.name = el.value;
+  }else if(kind === 'lender'){
+    x = findLoan(ref); if(x) x.loan.lender = el.value;
+  }else if(kind === 'rate'){
+    var r = fmtPct(el.value);
+    if(parseFloat(r) > 30) r = '30';
+    keepCaret(el, r);
+    x = findLoan(ref); if(x) x.loan.rate = r;
+  }else if(kind === 'term'){
+    var tm = fmtTerm(el.value);
+    if(parseInt(tm, 10) > 40) tm = '40';
+    keepCaret(el, tm);
+    x = findLoan(ref); if(x) x.loan.term = tm;
+  }else if(kind === 'repay'){
+    var rp = fmtInput(el.value);
+    keepCaret(el, rp);
+    x = findLoan(ref); if(x) x.loan.repay = rp;
   }else{
-    var lid = el.getAttribute('data-l');
-    p.loans.forEach(function(l){ if(l.id === lid) l.balance = f; });
+    return;
   }
   trackEngagement();
-  updateResults();
+  refresh();
+});
+
+calc.addEventListener('change', function(e){
+  var el = e.target;
+  if(el.tagName !== 'SELECT') return;
+  var kind = el.getAttribute('data-kind'), ref = el.getAttribute('data-ref');
+  var x, p;
+  if(kind === 'use'){
+    p = findProp(ref);
+    if(!p) return;
+    p.use = el.value;
+    /* loans follow the property's use until someone sets them directly */
+    p.loans.forEach(function(l){
+      if(!l.purposeSet){
+        l.purpose = p.use;
+        var s = $('lp-' + l.id);
+        if(s) s.value = p.use;
+      }
+    });
+  }else if(kind === 'purpose'){
+    x = findLoan(ref);
+    if(!x) return;
+    x.loan.purpose = el.value;
+    x.loan.purposeSet = true;
+  }else if(kind === 'freq'){
+    x = findLoan(ref);
+    if(!x) return;
+    x.loan.freq = freqInfo(el.value)[0];
+  }else if(kind === 'usedfor'){
+    x = findLoan(ref);
+    if(!x) return;
+    x.loan.usedFor = el.value;
+  }else if(kind === 'pool'){
+    p = findProp(ref);
+    if(!p) return;
+    p.pool = parseInt(el.value, 10) || 0;
+  }else{
+    return;
+  }
+  trackEngagement();
+  refresh();
 });
 
 calc.addEventListener('click', function(e){
   var btn = e.target.closest ? e.target.closest('[data-act]') : null;
   if(!btn) return;
-  var act = btn.getAttribute('data-act');
-  var p = findProp(btn.getAttribute('data-p'));
-  var focusId = null;
-  if(act === 'add-loan' && p){
-    var nl = newLoan();
+  var act = btn.getAttribute('data-act'), id = btn.getAttribute('data-id');
+  var focusId = null, p, x;
+  if(act === 'add-loan'){
+    p = findProp(id); if(!p || p.loans.length >= MAX_LOANS) return;
+    var nl = newLoan(p.use);
     p.loans.push(nl);
-    focusId = 'b-' + nl.id;
-  }else if(act === 'rm-loan' && p && p.loans.length > 1){
-    var lid = btn.getAttribute('data-l');
-    p.loans = p.loans.filter(function(l){ return l.id !== lid; });
-  }else if(act === 'rm-prop' && props.length > 1){
-    props = props.filter(function(x){ return x !== p; });
+    focusId = 'ln-' + nl.id;
+  }else if(act === 'rm-loan'){
+    x = findLoan(id); if(!x) return;
+    x.prop.loans = x.prop.loans.filter(function(l){ return l.id !== id; });
+  }else if(act === 'add-owner'){
+    p = findProp(id); if(!p) return;
+    var used = ownerShare(p);
+    var no = newOwner('', fmtPct(String(Math.max(0, Math.round((100 - used) * 100) / 100))));
+    p.owners.push(no);
+    focusId = 'on-' + no.id;
+  }else if(act === 'rm-owner'){
+    x = findOwner(id); if(!x || x.prop.owners.length < 2) return;
+    x.prop.owners = x.prop.owners.filter(function(o){ return o.id !== id; });
+  }else if(act === 'toggle'){
+    openId = openId === id ? '' : id;
+    applyOpen();
+    trackEngagement();
+    var card = $('card-' + id);
+    if(openId === id && card && card.scrollIntoView){
+      var r = card.getBoundingClientRect();
+      if(r.top < 0 || r.top > window.innerHeight - 80) card.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    return;
+  }else if(act === 'rm-prop'){
+    if(props.length < 2) return;
+    if(openId === id){
+      var ix = propIndex(id);
+      var nb = props[ix + 1] || props[ix - 1];
+      openId = nb ? nb.id : '';
+    }
+    props = props.filter(function(q){ return q.id !== id; });
+    allLoans(function(l){ if(l.usedFor === 'prop:' + id) l.usedFor = ''; });
   }else{
     return;
   }
   trackEngagement();
   render();
-  if(focusId){ var f = document.getElementById(focusId); if(f) f.focus(); }
+  if(focusId){ var f = $(focusId); if(f) f.focus(); }
 });
 
-document.getElementById('addPropertyBtn').addEventListener('click', function(){
-  var np = newProp();
+$('addPropertyBtn').addEventListener('click', function(){
+  /* new properties start as investments and copy the last property's owners */
+  if(props.length >= MAX_PROPS) return;
+  var last = props[props.length - 1];
+  var owners = last.owners.map(function(o){ return newOwner(o.name, o.share); });
+  var np = newProp('inv', owners);
   props.push(np);
+  openId = np.id; /* the new property opens and the rest collapse */
   trackEngagement();
   render();
-  var f = document.getElementById('v-' + np.id);
+  var f = $('n-' + np.id);
   if(f) f.focus();
+});
+
+/* ---------- Save to / open from a file on the visitor's device ---------- */
+var FILE_APP = 'loantheory-property-tree';
+function toISODateLocal(d){
+  function p2(n){ return (n < 10 ? '0' : '') + n; }
+  return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+}
+function serialise(){
+  /* property links are stored by position so a reopened file rebuilds cleanly */
+  return {
+    app: FILE_APP,
+    version: 1,
+    saved: toISODateLocal(new Date()),
+    properties: props.map(function(p){
+      return {
+        name: p.name, value: p.value, use: p.use, pool: p.pool,
+        owners: p.owners.map(function(o){ return { name: o.name, share: o.share }; }),
+        loans: p.loans.map(function(l){
+          var dt = depTarget(l);
+          return {
+            lender: l.lender, balance: l.balance, purpose: l.purpose, purposeSet: l.purposeSet,
+            rate: l.rate, term: l.term, repay: l.repay, freq: l.freq,
+            usedFor: dt ? 'prop:' + propIndex(dt) : l.usedFor
+          };
+        })
+      };
+    })
+  };
+}
+function cleanText(v, max){ return typeof v === 'string' ? v.slice(0, max) : ''; }
+function cleanUse(v){ return v === 'inv' ? 'inv' : 'oo'; }
+function restore(data){
+  if(!data || data.app !== FILE_APP || !Array.isArray(data.properties) || !data.properties.length) return false;
+  var list = data.properties.slice(0, MAX_PROPS);
+  var built = list.map(function(d){
+    var use = cleanUse(d.use);
+    var owners = (Array.isArray(d.owners) ? d.owners : []).slice(0, 10).map(function(o){
+      return newOwner(cleanText(o && o.name, 60), fmtPct(cleanText(String(o && o.share != null ? o.share : ''), 6)));
+    });
+    if(!owners.length) owners = [ newOwner('', '100') ];
+    var p = newProp(use, owners);
+    p.name = cleanText(d.name, 80);
+    p.value = fmtInput(cleanText(String(d.value || ''), 13));
+    var pool = parseInt(d.pool, 10);
+    p.pool = pool > 0 && pool < 100 ? pool : 0;
+    p.loans = (Array.isArray(d.loans) ? d.loans : []).slice(0, MAX_LOANS).map(function(x){
+      var l = newLoan(cleanUse(x && x.purpose));
+      l.lender = cleanText(x && x.lender, 60);
+      l.balance = fmtInput(cleanText(String(x && x.balance || ''), 13));
+      var rt = fmtPct(cleanText(String(x && x.rate || ''), 5));
+      l.rate = parseFloat(rt) > 30 ? '30' : rt;
+      var tm = fmtTerm(cleanText(String(x && x.term || ''), 2));
+      l.term = parseInt(tm, 10) > 40 ? '40' : tm;
+      l.repay = fmtInput(cleanText(String(x && x.repay || ''), 13));
+      l.freq = freqInfo(x && x.freq)[0];
+      l.purposeSet = !!(x && x.purposeSet);
+      l._usedFor = cleanText(x && x.usedFor, 20);
+      return l;
+    });
+    return p;
+  });
+  built.forEach(function(p, i){
+    p.loans.forEach(function(l){
+      var v = l._usedFor;
+      delete l._usedFor;
+      if(v.indexOf('prop:') === 0){
+        var k = parseInt(v.slice(5), 10);
+        l.usedFor = (k >= 0 && k < built.length && k !== i) ? 'prop:' + built[k].id : '';
+      }else{
+        l.usedFor = useForLabel(v) ? v : '';
+      }
+    });
+  });
+  props = built;
+  openId = built[0].id;
+  return true;
+}
+function fileMessage(kind, text, top){
+  $('fileStatus').innerHTML = '';
+  $('fileStatusTop').innerHTML = '';
+  if(text) $(top ? 'fileStatusTop' : 'fileStatus').innerHTML = '<div class="banner banner-' + kind + '">' + text + '</div>';
+}
+var openedFromTop = false;
+function saveFile(){
+  var json = JSON.stringify(serialise(), null, 2);
+  var name = 'loan-theory-property-tree-' + toISODateLocal(new Date()) + '.json';
+  try{
+    var blob = new Blob([ json ], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    fileMessage('positive', 'Your details have been saved as ' + esc(name) + '. Keep it somewhere handy and open it here next time.');
+  }catch(err){
+    fileMessage('negative', 'Your browser blocked the download. Try again in another browser.');
+  }
+}
+calc.addEventListener('click', function(e){
+  var btn = e.target.closest ? e.target.closest('[data-file]') : null;
+  if(!btn) return;
+  trackEngagement();
+  if(btn.getAttribute('data-file') === 'save'){
+    saveFile();
+  }else{
+    openedFromTop = btn.classList.contains('open-link');
+    $('fileInput').value = '';
+    $('fileInput').click();
+  }
+});
+$('fileInput').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  if(f.size > 500000){
+    fileMessage('negative', 'That file is too large to be a saved file from this calculator.', openedFromTop);
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(){
+    var ok = false;
+    try{ ok = restore(JSON.parse(String(reader.result))); }catch(err){ ok = false; }
+    if(ok){
+      render();
+      fileMessage('positive', 'Your saved details have been loaded. Change anything you need, then save again to keep the update.', openedFromTop);
+    }else{
+      fileMessage('negative', 'That file couldn\'t be opened. Make sure it\'s a file saved from this calculator.', openedFromTop);
+    }
+  };
+  reader.onerror = function(){
+    fileMessage('negative', 'That file couldn\'t be opened. Please try again.', openedFromTop);
+  };
+  reader.readAsText(f);
+});
+
+var resizeTimer = null;
+window.addEventListener('resize', function(){
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawLinks, 80);
 });
 
 render();
 </script>
+
 
 </body>
 </html>
